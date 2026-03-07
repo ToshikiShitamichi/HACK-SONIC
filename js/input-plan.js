@@ -241,4 +241,26 @@ $(function () {
             }
         );
     });
+    $("#demoDataButton").on("click", function () {
+        // デモデータを入力するロジック
+        $("#departurePrefecture").val("東京都").trigger("change");
+
+        setTimeout(() => {
+            $("#departureCity").val("新宿区");
+        }, 500);
+
+        $("#destinationPrefecture").val("福岡県").trigger("change");
+
+        setTimeout(() => {
+            $("#destinationCity").val("福岡市中央区");
+        }, 500);
+
+        $("#destinationKeyword").val("ジーズアカデミー福岡");
+
+        $("#departureDate").val("2026-03-06");
+        $("#duration").val("2泊3日");
+        $("#people").val("1");
+        $("#budgetMin").val("0");
+        $("#budgetMax").val("50000");
+    });
 });
