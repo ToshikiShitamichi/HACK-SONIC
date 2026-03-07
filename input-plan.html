@@ -13,6 +13,7 @@
     <h1>旅行プラン提案入力フォーム</h1>
 
     <form id="travelForm" action="./result-plan.php" method="post">
+        <!-- 出発地 -->
         <div>
             <label for="departurePrefecture">出発地（都道府県）</label>
             <select id="departurePrefecture" name="departurePrefecture" required>
@@ -65,10 +66,18 @@
                 <option value="鹿児島県">鹿児島県</option>
                 <option value="沖縄県">沖縄県</option>
             </select>
+
             <button type="button" id="getCurrentLocationButton">現在地を取得</button>
-            <p id="locationMessage"></p>
         </div>
 
+        <div>
+            <label for="departureCity">出発地（市区町村）</label>
+            <select id="departureCity" name="departureCity" required>
+                <option value="">都道府県を先に選択してください</option>
+            </select>
+        </div>
+
+        <!-- 旅行先 -->
         <div>
             <label for="destinationPrefecture">旅行先（都道府県）</label>
             <select id="destinationPrefecture" name="destinationPrefecture" required>
@@ -123,6 +132,19 @@
             </select>
         </div>
 
+        <div>
+            <label for="destinationArea">旅行先（市区町村 / エリア）</label>
+            <select id="destinationArea" name="destinationArea" required>
+                <option value="">都道府県を先に選択してください</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="destinationKeyword">旅行先フリーワード（任意）</label>
+            <input type="text" id="destinationKeyword" name="destinationKeyword" placeholder="観光地やグルメなどのキーワードを入力">
+        </div>
+
+        <!-- 日程 -->
         <div>
             <label for="departureDate">出発日</label>
             <input type="date" id="departureDate" name="departureDate" required>
