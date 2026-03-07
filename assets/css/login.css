@@ -1,0 +1,442 @@
+/* =============================================
+   Reset & Base
+   ============================================= */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* カラー */
+    --color-bg:        #fff9f5;
+    --color-surface:   #ffffff;
+    --color-border:    #ffdecf;
+    --color-text:      #2d2218;
+    --color-muted:     #a08878;
+    --color-accent:    #ff6b55;
+    --color-accent-dk: #e0512e;
+    --color-label:     #7a6258;
+
+    /* 形状 */
+    --radius-card:  28px;
+    --radius-input: 14px;
+    --radius-btn:   50px;    /* 丸みのあるピル型 */
+
+    /* 影 */
+    --shadow-card: 0 12px 56px rgba(255, 100, 60, 0.10), 0 2px 12px rgba(0, 0, 0, 0.04);
+    --shadow-btn:  0 6px 24px rgba(255, 107, 85, 0.38);
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+    /* 旅の夜明けをイメージした柔らかいグラデーション */
+    background: linear-gradient(
+        140deg,
+        #fff5ee 0%,
+        #fef0f7 35%,
+        #eef4ff 70%,
+        #edfaf7 100%
+    );
+    background-attachment: fixed;
+    color: var(--color-text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* =============================================
+   2カラム レイアウト
+   ============================================= */
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+}
+
+/* =============================================
+   左カラム：ヒーロー
+   ============================================= */
+.col-hero {
+    position: relative;
+    /* 空と海のやわらかいグラデーション */
+    background: linear-gradient(
+        160deg,
+        #b8dff7 0%,
+        #c8eaf5 40%,
+        #c4eee6 80%,
+        #d4f0e2 100%
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* 背景に光のにじみ */
+.col-hero::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: -20%;
+    width: 70%;
+    height: 70%;
+    background: radial-gradient(circle, rgba(255, 220, 180, 0.45) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.col-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -10%;
+    right: -10%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, rgba(160, 210, 255, 0.35) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.hero-image {
+    width: 72%;
+    max-width: 480px;
+    height: auto;
+    display: block;
+    position: relative;
+    z-index: 1;
+    min-height: 200px;
+    filter: drop-shadow(0 16px 32px rgba(80, 130, 180, 0.18));
+}
+
+/* =============================================
+   右カラム：フォームエリア
+   ============================================= */
+.col-form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+}
+
+/* =============================================
+   カード
+   ============================================= */
+.form-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-card);
+    padding: 52px 48px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+}
+
+/* カード上部のアクセントライン */
+.form-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff9966, #ff6b55, #ff8fa3, #a78bfa);
+}
+
+/* =============================================
+   ヘッダー
+   ============================================= */
+.form-header {
+    margin-bottom: 44px;
+}
+
+.brand-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 16px;
+}
+
+.title {
+    font-size: 34px;
+    font-weight: 300;
+    letter-spacing: -0.5px;
+    color: var(--color-text);
+    line-height: 1.15;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.title-kanji {
+    font-size: 46px;
+    font-weight: 800;
+    color: var(--color-accent);
+    line-height: 1;
+    text-shadow: 0 2px 12px rgba(255, 107, 85, 0.25);
+}
+
+.title-roman {
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--color-text);
+}
+
+.subtitle {
+    font-size: 13px;
+    color: var(--color-muted);
+    letter-spacing: 0.5px;
+}
+
+/* =============================================
+   フォーム
+   ============================================= */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--color-label);
+}
+
+.field-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-input);
+    background: #fff9f7;
+    font-size: 15px;
+    color: var(--color-text);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.field-input::placeholder {
+    color: #d4b8ae;
+}
+
+.field-input:focus {
+    border-color: var(--color-accent);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 3px rgba(255, 107, 85, 0.12);
+}
+
+/* =============================================
+   送信ボタン（ポップなグラデーション・ピル型）
+   ============================================= */
+.btn-submit {
+    display: block;
+    width: 100%;
+    padding: 15px 24px;
+    margin-top: 8px;
+    /* 夕焼けグラデーション */
+    background: linear-gradient(135deg, #ff9f6b 0%, #ff6b55 50%, #ff5f8a 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-btn);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: var(--shadow-btn);
+    transition: opacity 0.2s ease, transform 0.12s ease, box-shadow 0.2s ease;
+}
+
+.btn-submit:hover {
+    opacity: 0.90;
+    box-shadow: 0 8px 32px rgba(255, 107, 85, 0.48);
+    transform: translateY(-2px);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 12px rgba(255, 107, 85, 0.30);
+}
+
+/* =============================================
+   区切り線
+   ============================================= */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0 0;
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+}
+
+/* =============================================
+   ゲストボタン（アウトライン・ピル型）
+   ============================================= */
+.btn-guest {
+    display: block;
+    width: 100%;
+    padding: 14px 24px;
+    margin-top: 16px;
+    background: transparent;
+    color: var(--color-accent);
+    border: 1.5px solid var(--color-accent);
+    border-radius: var(--radius-btn);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.12s ease, box-shadow 0.2s ease;
+}
+
+.btn-guest:hover {
+    background: rgba(255, 107, 85, 0.07);
+    box-shadow: 0 4px 16px rgba(255, 107, 85, 0.15);
+    transform: translateY(-1px);
+}
+
+.btn-guest:active {
+    transform: translateY(0);
+}
+
+/* =============================================
+   フォーム下リンク
+   ============================================= */
+.form-link {
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--color-muted);
+    text-align: center;
+}
+
+.form-link a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.form-link a:hover {
+    text-decoration: underline;
+}
+
+/* =============================================
+   ゲスト説明文
+   ============================================= */
+.guest-description {
+    margin-bottom: 28px;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, rgba(255, 159, 107, 0.07) 0%, rgba(255, 95, 138, 0.06) 100%);
+    border: 1.5px solid rgba(255, 107, 85, 0.18);
+    border-radius: 14px;
+    font-size: 14px;
+    color: var(--color-muted);
+    line-height: 1.7;
+}
+
+/* =============================================
+   エラー表示
+   ============================================= */
+.form-error {
+    font-size: 13px;
+    color: #d94040;
+    background: #fff0f0;
+    border: 1.5px solid #ffc8c8;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 4px;
+}
+
+.field-input.is-error {
+    border-color: #ff8080;
+}
+
+.field-input.is-error:focus {
+    border-color: #d94040;
+    box-shadow: 0 0 0 3px rgba(217, 64, 64, 0.10);
+}
+
+/* =============================================
+   レスポンシブ
+   ============================================= */
+
+/* タブレット横 */
+@media (max-width: 900px) {
+    .form-card {
+        padding: 44px 36px;
+    }
+}
+
+/* タブレット縦〜スマホ：1カラムに切り替え */
+@media (max-width: 680px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .col-hero {
+        min-height: 220px;
+        padding: 32px 16px;
+    }
+
+    .hero-image {
+        width: 55%;
+        min-height: unset;
+    }
+
+    .col-form {
+        padding: 32px 20px;
+    }
+
+    .form-card {
+        padding: 36px 28px;
+        border-radius: 20px;
+    }
+
+    .title {
+        font-size: 28px;
+    }
+
+    .title-kanji {
+        font-size: 38px;
+    }
+
+    .title-roman {
+        font-size: 22px;
+    }
+}
+
+/* スマホ小 */
+@media (max-width: 400px) {
+    .form-card {
+        padding: 28px 20px;
+    }
+}
