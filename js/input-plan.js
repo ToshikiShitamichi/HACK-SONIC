@@ -140,7 +140,7 @@ $(function () {
     // 旅行先 市区町村ロード
     // -------------------------------
     async function loadDestinationCities(prefectureName, selectedCity = "") {
-        const $select = $("#destinationArea");
+        const $select = $("#destinationCity");
 
         if (!prefectureName) {
             resetCitySelect($select);
