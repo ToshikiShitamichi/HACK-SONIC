@@ -20,26 +20,14 @@ SELECT
     p.created_at,
     p.plan_id,
     u.name AS username,
-    pl.prefecture,
-    pl.city,
-    pl.destination,
-    pl.category,
     COUNT(l.id) AS like_count,
     SUM(l.user_id = :user_id) AS liked
 FROM post_table p
 JOIN user_table u ON p.user_id = u.id
-LEFT JOIN plan_table pl ON p.plan_id = pl.id
 LEFT JOIN like_table l ON p.id = l.post_id
 WHERE 1
 ";
 
-// 都道府県・カテゴリの絞り込み
-if ($prefecture !== '') {
-    $sql .= " AND pl.prefecture = :prefecture ";
-}
-if ($category !== '') {
-    $sql .= " AND pl.category = :category ";
-}
 
 $sql .= " GROUP BY p.id ";
 
@@ -73,13 +61,13 @@ $output = "";
 
 // 投稿カード作成
 foreach ($result as $record) {
+    
     $deleteBtn = '';
     if ($record['user_id'] == $user_id) {
         $deleteBtn = "<a class='deleteBtn' href='./controller/delete.php?id={$record['id']}' onclick='return confirm(\"本当に削除しますか？\")'>削除</a>";
     }
 
     $likedClass = $record['liked'] ? 'liked' : '';
-    $plan_url = $record['plan_id'] ? "plan_detail.php?id={$record['plan_id']}" : "#";
 
     $output .= '
 <div class="postCard">
@@ -104,7 +92,6 @@ foreach ($result as $record) {
         </div>
         <p>' . htmlspecialchars($record['message']) . '</p>
         <img src="' . $record['image_url'] . '" alt="">
-        <a href="' . $plan_url . '" class="planLink">プランを見る</a>
     </div>
 </div>';
 }
@@ -152,6 +139,8 @@ foreach ($result as $record) {
         <div id="linkArea">
             <a href="./input-plan.html">旅プラン生成</a>
             <a href="./quests/quest_list.php">旅クエスト</a>
+            <a href="./R/views/post.php">投稿</a>
+
         </div>
 
         <div id="timeLine">
