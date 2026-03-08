@@ -130,12 +130,13 @@ foreach ($result as $record) {
     </header>
     <main>
         <div id="quizArea">
-            <h2>クイズ</h2>
+            <?= include('./quiz/quiz-top-component.php'); ?>
+            <!-- <h2>クイズ</h2>
             <div>
                 <p>日本一GEEKな場所はどこでしょう</p>
                 <input type="text" placeholder="回答を入力">
             </div>
-            <button>回答</button>
+            <button>回答</button> -->
         </div>
 
         <div id="linkArea">
