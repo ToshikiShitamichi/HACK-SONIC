@@ -29,543 +29,6 @@ function difficultyLabel(string $difficulty): string
     }
 }
 
-function parseIsoDateTime(?string $value): ?DateTime
-{
-    if (!is_string($value) || trim($value) === '') {
-        return null;
-    }
-
-    try {
-        return new DateTime($value);
-    } catch (Throwable $e) {
-        return null;
-    }
-}
-
-function formatTimeFromIso(?string $value): string
-{
-    $dt = parseIsoDateTime($value);
-    if (!$dt) {
-        return '';
-    }
-    return $dt->format('H:i');
-}
-
-function formatDateFromIso(?string $value): string
-{
-    $dt = parseIsoDateTime($value);
-    if (!$dt) {
-        return '';
-    }
-    return $dt->format('Y-m-d');
-}
-
-function getTripDays(string $duration): int
-{
-    $duration = trim($duration);
-
-    if ($duration === '日帰り') {
-        return 1;
-    }
-
-    if (preg_match('/(\d+)泊(\d+)日/u', $duration, $matches)) {
-        return max(1, (int)$matches[2]);
-    }
-
-    if ($duration === '4泊5日以上') {
-        return 5;
-    }
-
-    return 1;
-}
-
-function buildDayLabels(string $departureDate, string $duration): array
-{
-    $days = getTripDays($duration);
-    $base = DateTime::createFromFormat('Y-m-d', $departureDate);
-
-    if (!$base) {
-        $base = new DateTime();
-    }
-
-    $labels = [];
-    for ($i = 0; $i < $days; $i++) {
-        $d = clone $base;
-        if ($i > 0) {
-            $d->modify('+' . $i . ' day');
-        }
-        $labels[$d->format('Y-m-d')] = 'Day ' . ($i + 1) . '（' . $d->format('Y-m-d') . '）';
-    }
-
-    return $labels;
-}
-
-function getDestinationAreaLabel(array $input): string
-{
-    $pref = trim((string)($input['destinationPrefecture'] ?? ''));
-    $city = trim((string)($input['destinationCity'] ?? ''));
-
-    if ($city !== '') {
-        return $city;
-    }
-
-    if ($pref !== '') {
-        return $pref;
-    }
-
-    return '現地';
-}
-
-function makeLodgingLabel(array $input): string
-{
-    return getDestinationAreaLabel($input) . 'に宿泊';
-}
-
-function buildQuestLookup(array $quests): array
-{
-    $lookup = [];
-
-    foreach ($quests as $quest) {
-        $place = trim((string)($quest['place'] ?? ''));
-        if ($place !== '') {
-            $lookup[$place] = $quest;
-        }
-    }
-
-    return $lookup;
-}
-
-function normalizePlaceKey(string $value): string
-{
-    $value = mb_strtolower(trim($value), 'UTF-8');
-    $value = preg_replace('/\s+/u', '', $value);
-    $value = preg_replace('/[（）\(\)・,、\-ー]/u', '', $value);
-    return $value ?? '';
-}
-
-function findQuestByLabel(array $quests, string $label): ?array
-{
-    $labelKey = normalizePlaceKey($label);
-    if ($labelKey === '') {
-        return null;
-    }
-
-    foreach ($quests as $quest) {
-        $place = (string)($quest['place'] ?? '');
-        $placeKey = normalizePlaceKey($place);
-
-        if ($placeKey === '') {
-            continue;
-        }
-
-        if ($labelKey === $placeKey) {
-            return $quest;
-        }
-
-        if (mb_strpos($labelKey, $placeKey) !== false || mb_strpos($placeKey, $labelKey) !== false) {
-            return $quest;
-        }
-    }
-
-    return null;
-}
-
-function isGoalLabel(array $goal, string $label): bool
-{
-    $goalName = normalizePlaceKey((string)($goal['name'] ?? ''));
-    $labelKey = normalizePlaceKey($label);
-
-    if ($goalName === '' || $labelKey === '') {
-        return false;
-    }
-
-    return $goalName === $labelKey
-        || mb_strpos($labelKey, $goalName) !== false
-        || mb_strpos($goalName, $labelKey) !== false;
-}
-
-function buildStepDetailText(array $step): string
-{
-    $parts = [];
-
-    if (!empty($step['instruction'])) {
-        $parts[] = (string)$step['instruction'];
-    }
-
-    if (!empty($step['line_name'])) {
-        $line = (string)$step['line_name'];
-
-        if (!empty($step['headsign'])) {
-            $line .= '・' . (string)$step['headsign'] . '行';
-        }
-
-        $parts[] = '乗車: ' . $line;
-    } elseif (!empty($step['vehicle_name'])) {
-        $parts[] = '乗車: ' . (string)$step['vehicle_name'];
-    }
-
-    if (!empty($step['stop_count'])) {
-        $parts[] = (string)$step['stop_count'] . '駅';
-    }
-
-    if (!empty($step['duration_text'])) {
-        $parts[] = (string)$step['duration_text'];
-    }
-
-    if (!empty($step['distance_text'])) {
-        $parts[] = (string)$step['distance_text'];
-    }
-
-    return implode(' / ', $parts);
-}
-
-function buildSegmentStepEntries(array $segment): array
-{
-    $entries = [];
-    $steps = (!empty($segment['step_details']) && is_array($segment['step_details']))
-        ? $segment['step_details']
-        : [];
-
-    if (empty($steps)) {
-        $fallbackMinutes = max(
-            1,
-            (int)ceil(((int)($segment['duration_seconds'] ?? 0)) / 60)
-        );
-
-        $entries[] = [
-            'type' => 'move',
-            'time' => '',
-            'title' => '交通機関',
-            'place' => trim((string)($segment['from_label'] ?? '') . ' → ' . (string)($segment['to_label'] ?? '')),
-            'detail' => trim(
-                (string)($segment['duration_text'] ?? '') .
-                    (!empty($segment['cost_text']) ? ' / ' . (string)$segment['cost_text'] : '')
-            ),
-            'transport_summary' => [
-                'from' => (string)($segment['from_label'] ?? ''),
-                'to' => (string)($segment['to_label'] ?? ''),
-                'duration' => (string)($segment['duration_text'] ?? ''),
-                'cost' => (string)($segment['cost_text'] ?? ''),
-                'distance' => (string)($segment['distance_text'] ?? ''),
-            ],
-            'image' => '',
-            'official_url' => '',
-            'google_maps_url' => '',
-            'minutes' => $fallbackMinutes,
-        ];
-
-        return $entries;
-    }
-
-    foreach ($steps as $step) {
-        $mode = (string)($step['travel_mode'] ?? '');
-        $departureTime = trim((string)($step['departure_time'] ?? ''));
-        $arrivalTime = trim((string)($step['arrival_time'] ?? ''));
-        $departureStop = trim((string)($step['departure_stop'] ?? ''));
-        $arrivalStop = trim((string)($step['arrival_stop'] ?? ''));
-        $detailText = buildStepDetailText($step);
-        $minutes = max(1, (int)ceil(((int)($step['duration_seconds'] ?? 0)) / 60));
-
-        if ($mode === 'TRANSIT') {
-            if ($departureStop !== '') {
-                $entries[] = [
-                    'type' => 'step_departure',
-                    'time' => $departureTime,
-                    'title' => '出発',
-                    'place' => $departureStop,
-                    'detail' => $detailText,
-                    'image' => '',
-                    'official_url' => '',
-                    'google_maps_url' => '',
-                    'minutes' => 0,
-                ];
-            }
-
-            if ($arrivalStop !== '') {
-                $entries[] = [
-                    'type' => 'step_arrival',
-                    'time' => $arrivalTime,
-                    'title' => '到着',
-                    'place' => $arrivalStop,
-                    'detail' => '',
-                    'image' => '',
-                    'official_url' => '',
-                    'google_maps_url' => '',
-                    'minutes' => $minutes,
-                ];
-            }
-        } else {
-            $entries[] = [
-                'type' => 'step_move',
-                'time' => '',
-                'title' => '交通機関',
-                'place' => trim($departureStop . ($arrivalStop !== '' ? ' → ' . $arrivalStop : '')),
-                'detail' => $detailText !== '' ? $detailText : ((string)($step['instruction'] ?? '徒歩または移動')),
-                'image' => '',
-                'official_url' => '',
-                'google_maps_url' => '',
-                'minutes' => $minutes,
-            ];
-        }
-    }
-
-    if (!empty($segment['cost_text']) || !empty($segment['distance_text']) || !empty($segment['duration_text'])) {
-        $entries[] = [
-            'type' => 'segment_summary',
-            'time' => '',
-            'title' => '交通機関情報（概算）',
-            'place' => trim((string)($segment['from_label'] ?? '') . ' → ' . (string)($segment['to_label'] ?? '')),
-            'detail' => '',
-            'transport_summary' => [
-                'from' => (string)($segment['from_label'] ?? ''),
-                'to' => (string)($segment['to_label'] ?? ''),
-                'duration' => (string)($segment['duration_text'] ?? ''),
-                'cost' => (string)($segment['cost_text'] ?? ''),
-                'distance' => (string)($segment['distance_text'] ?? ''),
-            ],
-            'image' => '',
-            'official_url' => '',
-            'google_maps_url' => '',
-            'minutes' => 0,
-        ];
-    }
-
-    return $entries;
-}
-
-function buildRouteTimelineForPlan(array $plan, array $input): array
-{
-    $routeSegments = (!empty($plan['route_segments']) && is_array($plan['route_segments'])) ? $plan['route_segments'] : [];
-    $quests = (!empty($plan['quests']) && is_array($plan['quests'])) ? $plan['quests'] : [];
-    $goal = (!empty($plan['goal']) && is_array($plan['goal'])) ? $plan['goal'] : [];
-
-    $questLookup = buildQuestLookup($quests);
-
-    $tripDays = getTripDays((string)($input['duration'] ?? '日帰り'));
-    $baseDate = (string)($input['departureDate'] ?? date('Y-m-d'));
-    $base = DateTime::createFromFormat('Y-m-d', $baseDate);
-    if (!$base) {
-        $base = new DateTime();
-    }
-
-    $days = [];
-    for ($i = 0; $i < $tripDays; $i++) {
-        $d = clone $base;
-        if ($i > 0) {
-            $d->modify('+' . $i . ' day');
-        }
-        $days[$i] = [
-            'date' => $d->format('Y-m-d'),
-            'day_label' => 'Day ' . ($i + 1) . '（' . $d->format('Y-m-d') . '）',
-            'entries' => [],
-        ];
-    }
-
-    $currentDayIndex = 0;
-    $currentMinutes = 9 * 60;
-    $dayEndMinutes = 18 * 60;
-    $lastDayIndex = $tripDays - 1;
-
-    $pushEntry = function (array $entry) use (&$days, &$currentDayIndex, &$currentMinutes, $tripDays, $dayEndMinutes, $input): void {
-        $minutes = (int)($entry['minutes'] ?? 0);
-
-        if ($currentDayIndex < $tripDays - 1 && $minutes > 0 && ($currentMinutes + $minutes) > $dayEndMinutes) {
-            $days[$currentDayIndex]['entries'][] = [
-                'type' => 'lodging',
-                'time' => '18:00',
-                'title' => '宿泊',
-                'place' => '',
-                'detail' => makeLodgingLabel($input),
-                'image' => '',
-                'official_url' => '',
-                'google_maps_url' => '',
-                'minutes' => 0,
-            ];
-
-            $currentDayIndex++;
-            $currentMinutes = 9 * 60;
-
-            $days[$currentDayIndex]['entries'][] = [
-                'type' => 'restart',
-                'time' => '09:00',
-                'title' => '行動開始',
-                'place' => '',
-                'detail' => 'この日の行動開始',
-                'image' => '',
-                'official_url' => '',
-                'google_maps_url' => '',
-                'minutes' => 0,
-            ];
-        }
-
-        if (empty($entry['time'])) {
-            $entry['time'] = sprintf('%02d:%02d', intdiv($currentMinutes, 60), $currentMinutes % 60);
-        }
-
-        $days[$currentDayIndex]['entries'][] = $entry;
-
-        if ($minutes > 0) {
-            $currentMinutes += $minutes;
-            if ($currentMinutes > $dayEndMinutes) {
-                $currentMinutes = $dayEndMinutes;
-            }
-        }
-    };
-
-    $pushToFinalDay = function (array $entry) use (&$days, $lastDayIndex): void {
-        $days[$lastDayIndex]['entries'][] = $entry;
-    };
-
-    $days[0]['entries'][] = [
-        'type' => 'start',
-        'time' => '09:00',
-        'title' => '出発地',
-        'place' => trim((string)($input['departureCity'] ?? '')) !== '' ? (string)$input['departureCity'] : (string)($input['departurePrefecture'] ?? ''),
-        'detail' => '出発日の9:00出発目安',
-        'image' => '',
-        'official_url' => '',
-        'google_maps_url' => '',
-        'minutes' => 0,
-    ];
-
-    foreach ($routeSegments as $segment) {
-        $segmentType = (string)($segment['type'] ?? '');
-        $toLabel = trim((string)($segment['to_label'] ?? ''));
-        $toAddress = trim((string)($segment['to_address'] ?? ''));
-
-        $isReturnSegment = in_array($segmentType, ['station_to_home', 'goal_to_home'], true);
-
-        if ($isReturnSegment) {
-            foreach (buildSegmentStepEntries($segment) as $stepEntry) {
-                $stepEntry['time'] = $stepEntry['time'] ?? '';
-                $pushToFinalDay($stepEntry);
-            }
-
-            $pushToFinalDay([
-                'type' => 'end',
-                'time' => '18:00',
-                'title' => '出発地',
-                'place' => (string)($segment['to_label'] ?? ''),
-                'detail' => '終了日の18:00到着目安',
-                'image' => '',
-                'official_url' => '',
-                'google_maps_url' => '',
-                'minutes' => 0,
-            ]);
-            continue;
-        }
-
-        foreach (buildSegmentStepEntries($segment) as $stepEntry) {
-            $pushEntry($stepEntry);
-        }
-
-        if (in_array($segmentType, ['start_to_station', 'goal_to_station'], true)) {
-            $pushEntry([
-                'type' => 'station',
-                'time' => '',
-                'title' => '最寄り駅',
-                'place' => $toLabel,
-                'detail' => '',
-                'image' => '',
-                'official_url' => '',
-                'google_maps_url' => '',
-                'minutes' => 0,
-            ]);
-            continue;
-        }
-
-        $matchedQuest = findQuestByLabel($quests, $toLabel);
-
-        if ($matchedQuest !== null) {
-            $pushEntry([
-                'type' => 'quest',
-                'time' => '',
-                'title' => (string)($matchedQuest['title'] ?? 'クエスト'),
-                'place' => (string)($matchedQuest['place'] ?? ''),
-                'detail' => (string)($matchedQuest['description'] ?? ''),
-                'stay_minutes' => (string)($matchedQuest['stay_minutes'] ?? ''),
-                'estimated_cost' => (string)($matchedQuest['estimated_cost'] ?? ''),
-                'difficulty' => (string)($matchedQuest['difficulty'] ?? ''),
-                'exp' => (string)($matchedQuest['exp'] ?? ''),
-                'image' => (string)($matchedQuest['image'] ?? ''),
-                'official_url' => (string)($matchedQuest['official_url'] ?? ''),
-                'google_maps_url' => (string)($matchedQuest['google_maps_url'] ?? ''),
-                'area' => $toAddress !== '' ? $toAddress : (string)($matchedQuest['area'] ?? ''),
-                'minutes' => max(10, (int)($matchedQuest['stay_minutes'] ?? 60)),
-            ]);
-        } elseif (!empty($goal) && isGoalLabel($goal, $toLabel)) {
-            $pushEntry([
-                'type' => 'goal',
-                'time' => '',
-                'title' => 'ゴール',
-                'place' => (string)($goal['name'] ?? ''),
-                'detail' => (string)($goal['description'] ?? ''),
-                'image' => (string)($goal['image'] ?? ''),
-                'official_url' => (string)($goal['official_url'] ?? ''),
-                'google_maps_url' => (string)($goal['google_maps_url'] ?? ''),
-                'area' => $toAddress !== '' ? $toAddress : (string)($goal['area'] ?? ''),
-                'minutes' => 60,
-            ]);
-        }
-    }
-
-    if ($tripDays > 1) {
-        for ($i = 0; $i < $tripDays - 1; $i++) {
-            $hasLodging = false;
-            foreach ($days[$i]['entries'] as $entry) {
-                if (($entry['type'] ?? '') === 'lodging') {
-                    $hasLodging = true;
-                    break;
-                }
-            }
-            if (!$hasLodging) {
-                $days[$i]['entries'][] = [
-                    'type' => 'lodging',
-                    'time' => '18:00',
-                    'title' => '宿泊',
-                    'place' => '',
-                    'detail' => makeLodgingLabel($input),
-                    'image' => '',
-                    'official_url' => '',
-                    'google_maps_url' => '',
-                    'minutes' => 0,
-                ];
-            }
-        }
-    }
-
-    foreach ($days as $i => &$day) {
-        usort($day['entries'], function ($a, $b) {
-            $ta = (string)($a['time'] ?? '');
-            $tb = (string)($b['time'] ?? '');
-            return strcmp($ta, $tb);
-        });
-
-        if ($i === $lastDayIndex) {
-            $filtered = [];
-            $hasEnd = false;
-
-            foreach ($day['entries'] as $entry) {
-                if (($entry['type'] ?? '') === 'end') {
-                    $hasEnd = true;
-                }
-            }
-
-            foreach ($day['entries'] as $entry) {
-                if ($hasEnd && ($entry['type'] ?? '') === 'lodging') {
-                    continue;
-                }
-                $filtered[] = $entry;
-            }
-
-            $day['entries'] = $filtered;
-        }
-    }
-    unset($day);
-
-    return $days;
-}
-
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
 ?>
@@ -652,6 +115,8 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
         body {
             margin: 0;
             padding: 16px;
+            background: #f7f7f7;
+            font-family: sans-serif;
         }
 
         .container {
@@ -661,6 +126,7 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
 
         .error {
             border: 1px solid #cc0000;
+            background: #fff;
             padding: 12px;
         }
 
@@ -673,46 +139,64 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
 
         .plan-column {
             border: 1px solid #cccccc;
-            padding: 12px;
+            background: #fff;
+            padding: 16px;
             box-sizing: border-box;
         }
 
-        .timeline-day {
-            margin-top: 16px;
-            margin-bottom: 16px;
+        .spot-card {
+            border: 1px solid #dddddd;
+            padding: 12px;
+            margin-top: 12px;
+            background: #fafafa;
         }
 
-        .timeline-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
+        .spot-card img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 8px;
+            display: block;
         }
 
-        .timeline-item {
-            display: grid;
-            grid-template-columns: 72px 1fr;
-            gap: 12px;
-            padding: 8px 0;
-            border-top: 1px solid #dddddd;
+        .spot-meta {
+            margin-top: 8px;
         }
 
-        .timeline-item:last-child {
-            border-bottom: 1px solid #dddddd;
+        .spot-meta div {
+            margin-top: 4px;
         }
 
-        .timeline-time {
+        .quest-number {
+            display: inline-block;
             font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .confirm-box {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #ddd;
+        }
+
+        .confirm-button {
+            display: inline-block;
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            background: #222;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .confirm-button:hover {
+            opacity: 0.9;
         }
 
         pre {
             white-space: pre-wrap;
             word-break: break-word;
             overflow-x: auto;
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
         }
 
         @media (max-width: 1024px) {
@@ -787,7 +271,6 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
                 <?php if (!empty($plans)): ?>
                     <div class="plans-grid">
                         <?php foreach ($plans as $index => $plan): ?>
-                            <?php $timeline = buildRouteTimelineForPlan($plan, $input); ?>
                             <section class="plan-column">
                                 <h2>プラン<?= $index + 1 ?></h2>
 
@@ -810,104 +293,95 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
                                     </p>
                                 <?php endif; ?>
 
-                                <?php if (!empty($plan['total_travel_time_text'])): ?>
-                                    <p><strong>総移動時間目安:</strong> <?= h($plan['total_travel_time_text']) ?></p>
-                                <?php endif; ?>
+                                <?php if (!empty($plan['goal']) && is_array($plan['goal'])): ?>
+                                    <div class="spot-card">
+                                        <h4>ゴール地点</h4>
+                                        <div><strong><?= h($plan['goal']['name'] ?? '') ?></strong></div>
 
-                                <?php if (!empty($plan['total_cost_estimate_text'])): ?>
-                                    <p><strong>総費用目安:</strong> <?= h($plan['total_cost_estimate_text']) ?></p>
-                                <?php endif; ?>
+                                        <?php if (!empty($plan['goal']['description'])): ?>
+                                            <div class="spot-meta"><?= nl2br(h($plan['goal']['description'])) ?></div>
+                                        <?php endif; ?>
 
-                                <h4>タイムライン</h4>
+                                        <div class="spot-meta">
+                                            <?php if (!empty($plan['goal']['area'])): ?>
+                                                <div><strong>住所・エリア:</strong> <?= h($plan['goal']['area']) ?></div>
+                                            <?php endif; ?>
 
-                                <?php foreach ($timeline as $dayBlock): ?>
-                                    <div class="timeline-day">
-                                        <h5><?= h($dayBlock['day_label']) ?></h5>
-                                        <ol class="timeline-list">
-                                            <?php foreach ($dayBlock['entries'] as $entry): ?>
-                                                <li class="timeline-item">
-                                                    <div class="timeline-time"><?= h($entry['time'] ?? '') ?></div>
-                                                    <div>
-                                                        <div>
-                                                            <strong><?= h($entry['title'] ?? '') ?></strong>
-                                                            <?php if (!empty($entry['place'])): ?>
-                                                                ：<?= h($entry['place']) ?>
-                                                            <?php endif; ?>
-                                                        </div>
+                                            <?php if (!empty($plan['goal']['google_maps_url'])): ?>
+                                                <div>
+                                                    <a href="<?= h($plan['goal']['google_maps_url']) ?>" target="_blank" rel="noopener noreferrer">Googleマップで見る</a>
+                                                </div>
+                                            <?php endif; ?>
 
-                                                        <?php if (!empty($entry['area']) && in_array(($entry['type'] ?? ''), ['quest', 'goal'], true)): ?>
-                                                            <div>住所・エリア: <?= h($entry['area']) ?></div>
-                                                        <?php endif; ?>
+                                            <?php if (!empty($plan['goal']['official_url'])): ?>
+                                                <div>
+                                                    <a href="<?= h($plan['goal']['official_url']) ?>" target="_blank" rel="noopener noreferrer">公式サイトを見る</a>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
 
-                                                        <?php if (!empty($entry['detail'])): ?>
-                                                            <div><?= nl2br(h($entry['detail'])) ?></div>
-                                                        <?php endif; ?>
-                                                        <?php if (!empty($entry['transport_summary'])): ?>
-                                                            <div><strong>交通機関情報（概算）</strong></div>
-
-                                                            <?php if (!empty($entry['transport_summary']['from']) || !empty($entry['transport_summary']['to'])): ?>
-                                                                <div>
-                                                                    区間:
-                                                                    <?= h((string)($entry['transport_summary']['from'] ?? '')) ?>
-                                                                    →
-                                                                    <?= h((string)($entry['transport_summary']['to'] ?? '')) ?>
-                                                                </div>
-                                                            <?php endif; ?>
-
-                                                            <?php if (!empty($entry['transport_summary']['duration'])): ?>
-                                                                <div>所要時間: <?= h((string)$entry['transport_summary']['duration']) ?></div>
-                                                            <?php endif; ?>
-
-                                                            <?php if (!empty($entry['transport_summary']['cost'])): ?>
-                                                                <div>交通費: <?= h((string)$entry['transport_summary']['cost']) ?></div>
-                                                            <?php endif; ?>
-
-                                                            <?php if (!empty($entry['transport_summary']['distance'])): ?>
-                                                                <div>距離: <?= h((string)$entry['transport_summary']['distance']) ?></div>
-                                                            <?php endif; ?>
-                                                        <?php endif; ?>
-
-                                                        <?php if (($entry['type'] ?? '') === 'quest'): ?>
-                                                            <?php if (!empty($entry['stay_minutes'])): ?>
-                                                                <div>滞在目安: <?= h((string)$entry['stay_minutes']) ?>分</div>
-                                                            <?php endif; ?>
-
-                                                            <?php if (!empty($entry['estimated_cost'])): ?>
-                                                                <div>費用目安: <?= h($entry['estimated_cost']) ?></div>
-                                                            <?php endif; ?>
-
-                                                            <?php if (!empty($entry['difficulty'])): ?>
-                                                                <div>難易度: <?= h(difficultyLabel((string)$entry['difficulty'])) ?></div>
-                                                            <?php endif; ?>
-
-                                                            <?php if (!empty($entry['exp'])): ?>
-                                                                <div>EXP: <?= h((string)$entry['exp']) ?></div>
-                                                            <?php endif; ?>
-                                                        <?php endif; ?>
-
-                                                        <?php if (!empty($entry['google_maps_url'])): ?>
-                                                            <div>
-                                                                <a href="<?= h($entry['google_maps_url']) ?>" target="_blank" rel="noopener noreferrer">Googleマップで見る</a>
-                                                            </div>
-                                                        <?php endif; ?>
-
-                                                        <?php if (!empty($entry['official_url'])): ?>
-                                                            <div>
-                                                                <a href="<?= h($entry['official_url']) ?>" target="_blank" rel="noopener noreferrer">公式サイトを見る</a>
-                                                            </div>
-                                                        <?php endif; ?>
-
-                                                        <?php if (!empty($entry['image']) && in_array(($entry['type'] ?? ''), ['quest', 'goal'], true)): ?>
-                                                            <div>
-                                                                <img src="<?= h($entry['image']) ?>" alt="<?= h($entry['place'] ?? $entry['title'] ?? '') ?>">
-                                                            </div>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </li>
-                                            <?php endforeach; ?>
-                                        </ol>
+                                        <?php if (!empty($plan['goal']['image'])): ?>
+                                            <img src="<?= h($plan['goal']['image']) ?>" alt="<?= h($plan['goal']['name'] ?? 'ゴール地点') ?>">
+                                        <?php endif; ?>
                                     </div>
-                                <?php endforeach; ?>
+                                <?php endif; ?>
+
+                                <?php if (!empty($plan['quests']) && is_array($plan['quests'])): ?>
+                                    <h4>クエスト</h4>
+
+                                    <?php foreach ($plan['quests'] as $qIndex => $quest): ?>
+                                        <div class="spot-card">
+                                            <div class="quest-number">クエスト<?= $qIndex + 1 ?></div>
+                                            <div><strong><?= h($quest['title'] ?? 'クエスト') ?></strong></div>
+
+                                            <?php if (!empty($quest['place'])): ?>
+                                                <div><strong>場所:</strong> <?= h($quest['place']) ?></div>
+                                            <?php endif; ?>
+
+                                            <?php if (!empty($quest['description'])): ?>
+                                                <div class="spot-meta"><?= nl2br(h($quest['description'])) ?></div>
+                                            <?php endif; ?>
+
+                                            <div class="spot-meta">
+                                                <?php if (!empty($quest['area'])): ?>
+                                                    <div><strong>住所・エリア:</strong> <?= h($quest['area']) ?></div>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($quest['stay_minutes'])): ?>
+                                                    <div><strong>滞在目安:</strong> <?= h((string)$quest['stay_minutes']) ?>分</div>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($quest['estimated_cost'])): ?>
+                                                    <div><strong>費用目安:</strong> <?= h($quest['estimated_cost']) ?></div>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($quest['difficulty'])): ?>
+                                                    <div><strong>難易度:</strong> <?= h(difficultyLabel((string)$quest['difficulty'])) ?></div>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($quest['exp'])): ?>
+                                                    <div><strong>EXP:</strong> <?= h((string)$quest['exp']) ?></div>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($quest['google_maps_url'])): ?>
+                                                    <div>
+                                                        <a href="<?= h($quest['google_maps_url']) ?>" target="_blank" rel="noopener noreferrer">Googleマップで見る</a>
+                                                    </div>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($quest['official_url'])): ?>
+                                                    <div>
+                                                        <a href="<?= h($quest['official_url']) ?>" target="_blank" rel="noopener noreferrer">公式サイトを見る</a>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+
+                                            <?php if (!empty($quest['image'])): ?>
+                                                <img src="<?= h($quest['image']) ?>" alt="<?= h($quest['place'] ?? $quest['title'] ?? 'クエスト') ?>">
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
 
                                 <?php if (!empty($plan['notes']) && is_array($plan['notes'])): ?>
                                     <div>
@@ -919,17 +393,20 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
                                         </ul>
                                     </div>
                                 <?php endif; ?>
+
+                                <div class="confirm-box">
+                                    <form action="./confirm-plan.php" method="post">
+                                        <input type="hidden" name="selectedPlan" value="<?= h(base64_encode(json_encode($plan, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))) ?>">
+                                        <input type="hidden" name="inputData" value="<?= h(base64_encode(json_encode($input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))) ?>">
+                                        <button type="submit" class="confirm-button">このプランを確定</button>
+                                    </form>
+                                </div>
                             </section>
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
                     <p>プラン候補を取得できませんでした。</p>
                 <?php endif; ?>
-            </section>
-
-            <section>
-                <h2>デバッグ用: APIレスポンス</h2>
-                <pre><?= h(json_encode($apiResponse, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) ?></pre>
             </section>
         <?php endif; ?>
 
