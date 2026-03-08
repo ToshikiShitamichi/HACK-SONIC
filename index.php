@@ -116,21 +116,29 @@ foreach ($result as $record) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./assets/css/common.css">
     <link rel="stylesheet" href="./index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <title>R_Home</title>
+    <title>ホーム | 旅 so sweet</title>
 </head>
 
 <body>
-    <header>
-        <h1>"旅" so sweet</h1>
-        <div class="headerLinks">
-            <!-- <a href="./auth/register.php">ユーザー登録</a>
-            <a href="./auth/login.php">ログイン</a> -->
-            <a href="./auth/logout.php">ログアウト</a>
-        </div>
-    </header>
-    <main>
+
+<div class="page-frame-top"></div>
+
+<header>
+    <div class="header-brand">
+        <span class="brand-kanji">旅</span>
+        <span class="brand-roman">so sweet</span>
+    </div>
+    <nav class="header-nav">
+        <a href="./quests/quest_list.php">旅クエスト</a>
+        <a href="./quests/my_quests.php">マイクエスト</a>
+        <a href="./auth/logout.php">ログアウト</a>
+    </nav>
+</header>
+
+<main>
         <div id="quizArea">
             <?php include('./quiz/quiz-top-component.php'); ?>
             <!-- <h2>クイズ</h2>
@@ -213,6 +221,9 @@ foreach ($result as $record) {
             list.forEach(p => pref.innerHTML += `<option value="${p}">${p}</option>`);
         };
     </script>
+
+<footer class="page-footer">Travel Quest · 旅 so sweet</footer>
+
 </body>
 
 </html>
