@@ -26,5 +26,5 @@ $stmt->execute([$user_id, '新米旅人']);
 session_regenerate_id(true);
 $_SESSION['user_id'] = $user_id;
 
-header('Location: ' . BASE_URL . '/index.php');
+header('Location: ../index.php');
 exit;
