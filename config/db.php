@@ -1,7 +1,7 @@
 <?php
 
 // アプリのベースURL（リダイレクト用）
-define('BASE_URL', '/lab/HACK-SONIC');
+// define('BASE_URL', '/HACK-SONIC');
 
 define('DB_HOST',    'localhost');
 define('DB_NAME',    'hack_sonic');
@@ -9,7 +9,8 @@ define('DB_USER',    'root');
 define('DB_PASS',    '');
 define('DB_CHARSET', 'utf8mb4');
 
-function get_db(): PDO {
+function get_db(): PDO
+{
     static $pdo = null;
     if ($pdo === null) {
         $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
