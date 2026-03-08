@@ -4,233 +4,733 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>旅行プラン提案 入力フォーム</title>
+    <title>旅行プラン提案 入力フォーム | 旅 so sweet</title>
 
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
-</head>
-
-<body>
-    <h1>旅行プラン提案入力フォーム</h1>
-    <button id="demoDataButton">デモデータを入力</button>
-
-    <form id="travelForm" action="./result-plan.php" method="post">
-        <!-- 出発地 -->
-        <div>
-            <label for="departurePrefecture">出発地（都道府県）</label>
-            <select id="departurePrefecture" name="departurePrefecture" required>
-                <option value="">選択してください</option>
-                <option value="北海道">北海道</option>
-                <option value="青森県">青森県</option>
-                <option value="岩手県">岩手県</option>
-                <option value="宮城県">宮城県</option>
-                <option value="秋田県">秋田県</option>
-                <option value="山形県">山形県</option>
-                <option value="福島県">福島県</option>
-                <option value="茨城県">茨城県</option>
-                <option value="栃木県">栃木県</option>
-                <option value="群馬県">群馬県</option>
-                <option value="埼玉県">埼玉県</option>
-                <option value="千葉県">千葉県</option>
-                <option value="東京都">東京都</option>
-                <option value="神奈川県">神奈川県</option>
-                <option value="新潟県">新潟県</option>
-                <option value="富山県">富山県</option>
-                <option value="石川県">石川県</option>
-                <option value="福井県">福井県</option>
-                <option value="山梨県">山梨県</option>
-                <option value="長野県">長野県</option>
-                <option value="岐阜県">岐阜県</option>
-                <option value="静岡県">静岡県</option>
-                <option value="愛知県">愛知県</option>
-                <option value="三重県">三重県</option>
-                <option value="滋賀県">滋賀県</option>
-                <option value="京都府">京都府</option>
-                <option value="大阪府">大阪府</option>
-                <option value="兵庫県">兵庫県</option>
-                <option value="奈良県">奈良県</option>
-                <option value="和歌山県">和歌山県</option>
-                <option value="鳥取県">鳥取県</option>
-                <option value="島根県">島根県</option>
-                <option value="岡山県">岡山県</option>
-                <option value="広島県">広島県</option>
-                <option value="山口県">山口県</option>
-                <option value="徳島県">徳島県</option>
-                <option value="香川県">香川県</option>
-                <option value="愛媛県">愛媛県</option>
-                <option value="高知県">高知県</option>
-                <option value="福岡県">福岡県</option>
-                <option value="佐賀県">佐賀県</option>
-                <option value="長崎県">長崎県</option>
-                <option value="熊本県">熊本県</option>
-                <option value="大分県">大分県</option>
-                <option value="宮崎県">宮崎県</option>
-                <option value="鹿児島県">鹿児島県</option>
-                <option value="沖縄県">沖縄県</option>
-            </select>
-
-            <button type="button" id="getCurrentLocationButton">現在地を取得</button>
-        </div>
-
-        <div>
-            <label for="departureCity">出発地（市区町村）</label>
-            <select id="departureCity" name="departureCity" required>
-                <option value="">都道府県を先に選択してください</option>
-            </select>
-        </div>
-
-        <!-- 旅行先 -->
-        <div>
-            <label for="destinationPrefecture">旅行先（都道府県）</label>
-            <select id="destinationPrefecture" name="destinationPrefecture" required>
-                <option value="">選択してください</option>
-                <option value="北海道">北海道</option>
-                <option value="青森県">青森県</option>
-                <option value="岩手県">岩手県</option>
-                <option value="宮城県">宮城県</option>
-                <option value="秋田県">秋田県</option>
-                <option value="山形県">山形県</option>
-                <option value="福島県">福島県</option>
-                <option value="茨城県">茨城県</option>
-                <option value="栃木県">栃木県</option>
-                <option value="群馬県">群馬県</option>
-                <option value="埼玉県">埼玉県</option>
-                <option value="千葉県">千葉県</option>
-                <option value="東京都">東京都</option>
-                <option value="神奈川県">神奈川県</option>
-                <option value="新潟県">新潟県</option>
-                <option value="富山県">富山県</option>
-                <option value="石川県">石川県</option>
-                <option value="福井県">福井県</option>
-                <option value="山梨県">山梨県</option>
-                <option value="長野県">長野県</option>
-                <option value="岐阜県">岐阜県</option>
-                <option value="静岡県">静岡県</option>
-                <option value="愛知県">愛知県</option>
-                <option value="三重県">三重県</option>
-                <option value="滋賀県">滋賀県</option>
-                <option value="京都府">京都府</option>
-                <option value="大阪府">大阪府</option>
-                <option value="兵庫県">兵庫県</option>
-                <option value="奈良県">奈良県</option>
-                <option value="和歌山県">和歌山県</option>
-                <option value="鳥取県">鳥取県</option>
-                <option value="島根県">島根県</option>
-                <option value="岡山県">岡山県</option>
-                <option value="広島県">広島県</option>
-                <option value="山口県">山口県</option>
-                <option value="徳島県">徳島県</option>
-                <option value="香川県">香川県</option>
-                <option value="愛媛県">愛媛県</option>
-                <option value="高知県">高知県</option>
-                <option value="福岡県">福岡県</option>
-                <option value="佐賀県">佐賀県</option>
-                <option value="長崎県">長崎県</option>
-                <option value="熊本県">熊本県</option>
-                <option value="大分県">大分県</option>
-                <option value="宮崎県">宮崎県</option>
-                <option value="鹿児島県">鹿児島県</option>
-                <option value="沖縄県">沖縄県</option>
-            </select>
-        </div>
-
-        <div>
-            <label for="destinationCity">旅行先（市区町村 / エリア）</label>
-            <select id="destinationCity" name="destinationCity" required>
-                <option value="">都道府県を先に選択してください</option>
-            </select>
-        </div>
-
-        <div>
-            <label for="destinationKeyword">旅行先フリーワード（任意）</label>
-            <input type="text" id="destinationKeyword" name="destinationKeyword" placeholder="観光地やグルメなどのキーワードを入力">
-        </div>
-
-        <!-- 日程 -->
-        <div>
-            <label for="departureDate">出発日</label>
-            <input type="date" id="departureDate" name="departureDate" required>
-        </div>
-
-        <div>
-            <label for="duration">期間</label>
-            <select id="duration" name="duration" required>
-                <option value="">選択してください</option>
-                <option value="日帰り">日帰り</option>
-                <option value="1泊2日">1泊2日</option>
-                <option value="2泊3日">2泊3日</option>
-                <option value="3泊4日">3泊4日</option>
-                <option value="4泊5日以上">4泊5日以上</option>
-            </select>
-        </div>
-
-        <div>
-            <label for="people">人数</label>
-            <select id="people" name="people" required>
-                <option value="">選択してください</option>
-                <option value="1">1人</option>
-                <option value="2">2人</option>
-                <option value="3">3人</option>
-                <option value="4">4人</option>
-                <option value="5">5人</option>
-                <option value="6以上">6人以上</option>
-            </select>
-        </div>
-
-        <div>
-            <label for="budgetSlider">予算</label>
-            <div id="budgetSlider"></div>
-
-            <p>
-                <span id="budgetMinText">0円</span>
-                〜
-                <span id="budgetMaxText">150,000円</span>
-            </p>
-
-            <input type="hidden" id="budgetMin" name="budgetMin" value="0">
-            <input type="hidden" id="budgetMax" name="budgetMax" value="150000">
-        </div>
-
-        <div>
-            <button type="submit" id="submitButton">プラン候補を見る</button>
-        </div>
-    </form>
-
-    <div id="loadingOverlay" hidden aria-live="polite" aria-busy="true"
-        style="position:fixed; inset:0; background:rgba(255,255,255,0.92); z-index:9999; display:none;">
-        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center;">
-            <p style="margin:0 0 16px; font-size:24px;">プランを生成中です</p>
-            <div style="display:flex; justify-content:center; gap:12px; margin-bottom:16px;">
-                <span class="loading-dot"
-                    style="width:14px; height:14px; border-radius:50%; background:#333; display:inline-block; animation: loadingBounce 1.2s infinite ease-in-out;"></span>
-                <span class="loading-dot"
-                    style="width:14px; height:14px; border-radius:50%; background:#333; display:inline-block; animation: loadingBounce 1.2s 0.2s infinite ease-in-out;"></span>
-                <span class="loading-dot"
-                    style="width:14px; height:14px; border-radius:50%; background:#333; display:inline-block; animation: loadingBounce 1.2s 0.4s infinite ease-in-out;"></span>
-            </div>
-            <p id="loadingMessage" style="margin:0;">3分ほどかかる場合があります。画面を閉じずにお待ちください。</p>
-        </div>
-    </div>
-
     <style>
-        @keyframes loadingBounce {
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-            0%,
-            80%,
-            100% {
+        :root {
+            --pink:      #e8405c;
+            --pink-lt:   #f47090;
+            --pink-pale: #fce8ec;
+            --pink-deep: #c02848;
+            --cream:     #fff8f4;
+            --white:     #ffffff;
+            --dark:      #1e1218;
+            --text:      #2a1a20;
+            --muted:     #9a7885;
+            --border:    #f0d0d8;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif;
+            background: var(--cream);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ========== 上部フレームライン ========== */
+        .page-frame-top {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--pink-pale), var(--pink), var(--pink-lt), var(--pink));
+            z-index: 100;
+        }
+
+        /* ========== ヘッダー ========== */
+        header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 4px;
+            z-index: 99;
+            box-shadow: 0 2px 12px rgba(232, 64, 92, 0.06);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .header-brand .brand-kanji {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--pink);
+            letter-spacing: -1px;
+        }
+
+        .header-brand .brand-roman {
+            font-size: 14px;
+            font-weight: 300;
+            color: var(--muted);
+            letter-spacing: 3px;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-nav a {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-decoration: none;
+            color: var(--muted);
+            transition: color 0.2s;
+        }
+        .header-nav a:hover { color: var(--pink); }
+
+        .header-nav .nav-active {
+            color: var(--pink);
+        }
+
+        /* ========== HERO AREA ========== */
+        .hero {
+            position: relative;
+            text-align: center;
+            padding: 56px 24px 48px;
+            overflow: hidden;
+            background:
+                radial-gradient(ellipse at 50% 0%, rgba(252, 232, 236, 0.80) 0%, transparent 60%),
+                var(--white);
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* 装飾ドット */
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 32px; right: 56px;
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--pink);
+            box-shadow:
+                14px 0  0 var(--pink-pale),
+                28px 0  0 var(--pink),
+                0  12px 0 var(--pink-pale),
+                14px 12px 0 var(--pink);
+            pointer-events: none;
+        }
+
+        .hero-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--pink);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .hero-eyebrow::before,
+        .hero-eyebrow::after {
+            content: '';
+            width: 40px;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .hero-title {
+            font-size: clamp(28px, 5vw, 52px);
+            font-weight: 900;
+            color: var(--text);
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+        }
+        .hero-title em {
+            color: var(--pink);
+            font-style: normal;
+        }
+
+        .hero-subtitle {
+            font-size: 13px;
+            color: var(--muted);
+            letter-spacing: 3px;
+        }
+
+        /* ========== メインコンテンツ ========== */
+        main {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 32px 16px 64px;
+        }
+
+        .page-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ========== フォームカード ========== */
+        .form-card {
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            padding: 32px 28px;
+            box-shadow: 0 4px 16px rgba(232, 64, 92, 0.06);
+        }
+
+        .form-card::before {
+            content: '';
+            display: block;
+            height: 3px;
+            background: linear-gradient(90deg, var(--pink-pale), var(--pink-lt));
+            border-radius: 20px 20px 0 0;
+            margin: -32px -28px 24px -28px;
+        }
+
+        /* ========== フォーム要素 ========== */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group select,
+        .form-group input[type="text"],
+        .form-group input[type="date"] {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--cream);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .form-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239a7885' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        .form-group select:focus,
+        .form-group input[type="text"]:focus,
+        .form-group input[type="date"]:focus {
+            outline: none;
+            border-color: var(--pink-lt);
+            box-shadow: 0 0 0 3px rgba(232, 64, 92, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: var(--muted);
+        }
+
+        /* ========== 行内フレックス ========== */
+        .form-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        /* ========== 小さいボタン ========== */
+        .btn-small {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--pink);
+            background: var(--pink-pale);
+            border: 1.5px solid var(--pink-lt);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-small:hover {
+            background: #fce0e5;
+            transform: translateY(-1px);
+        }
+
+        .btn-small:active {
+            transform: translateY(0);
+        }
+
+        /* ========== デモボタン ========== */
+        .btn-demo {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--muted);
+            background: transparent;
+            border: 1.5px solid var(--border);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .btn-demo:hover {
+            color: var(--pink);
+            border-color: var(--pink-lt);
+        }
+
+        /* ========== 予算スライダー ========== */
+        .budget-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 16px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .budget-display span {
+            color: var(--pink);
+        }
+
+        /* jQuery UI スライダーのカスタマイズ */
+        .ui-slider {
+            height: 8px;
+            background: var(--pink-pale);
+            border: none;
+            border-radius: 4px;
+            margin-top: 12px;
+        }
+
+        .ui-slider .ui-slider-range {
+            background: linear-gradient(90deg, var(--pink-lt), var(--pink));
+            border-radius: 4px;
+        }
+
+        .ui-slider .ui-slider-handle {
+            width: 20px;
+            height: 20px;
+            top: -6px;
+            border-radius: 50%;
+            background: var(--white);
+            border: 2px solid var(--pink);
+            box-shadow: 0 2px 8px rgba(232, 64, 92, 0.25);
+            cursor: pointer;
+        }
+
+        .ui-slider .ui-slider-handle:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(232, 64, 92, 0.2);
+        }
+
+        /* ========== 送信ボタン ========== */
+        .btn-submit {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            background: linear-gradient(135deg, var(--pink-lt) 0%, var(--pink) 55%, var(--pink-deep) 100%);
+            color: #fff;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(232, 64, 92, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            transition: opacity 0.2s ease, transform 0.12s ease, box-shadow 0.2s ease;
+            margin-top: 8px;
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -80%;
+            width: 55%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+            transform: skewX(-18deg);
+            animation: shimmer 3.5s ease infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { left: -80%; }
+            45%       { left: 130%; }
+        }
+
+        .btn-submit:hover {
+            opacity: 0.92;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(232, 64, 92, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 12px rgba(232, 64, 92, 0.28);
+        }
+
+        /* ========== ローディングオーバーレイ ========== */
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 248, 244, 0.96);
+            z-index: 9999;
+            display: none;
+        }
+
+        .loading-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .loading-content p {
+            margin: 0 0 16px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .loading-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--pink);
+            display: inline-block;
+            animation: loadingBounce 1.2s infinite ease-in-out;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes loadingBounce {
+            0%, 80%, 100% {
                 transform: scale(0.7);
                 opacity: 0.4;
             }
-
             40% {
                 transform: scale(1.15);
                 opacity: 1;
             }
         }
-    </style>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.min.js"></script>
-    <script src="./js/input-plan.js"></script>
+        #loadingMessage {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        /* ========== フッター ========== */
+        .page-footer {
+            text-align: center;
+            padding: 20px 24px 32px;
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--border);
+        }
+
+        /* ========== レスポンシブ ========== */
+        @media (max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .form-card {
+                padding: 24px 20px;
+            }
+
+            .form-card::before {
+                margin: -24px -20px 20px -20px;
+            }
+
+            .header-nav {
+                gap: 10px;
+            }
+
+            .header-nav a {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page-frame-top"></div>
+
+<header>
+    <div class="header-brand">
+        <span class="brand-kanji">旅</span>
+        <span class="brand-roman">so sweet</span>
+    </div>
+    <nav class="header-nav">
+        <a href="./index.php">旅のホームへ</a>
+        <a href="./quests/quest_list.php">クエスト</a>
+    </nav>
+</header>
+
+<!-- HERO AREA -->
+<section class="hero">
+    <p class="hero-eyebrow">Travel Plan Generator</p>
+    <h1 class="hero-title">旅の<em>プラン</em>を提案</h1>
+    <p class="hero-subtitle">あなただけの旅をデザイン</p>
+</section>
+
+<main>
+    <div class="page-section-title">旅行情報を入力</div>
+
+    <div class="form-card">
+        <button type="button" id="demoDataButton" class="btn-demo">デモデータを入力</button>
+
+        <form id="travelForm" action="./result-plan.php" method="post">
+            <!-- 出発地 -->
+            <div class="form-group">
+                <label for="departurePrefecture">出発地（都道府県）</label>
+                <select id="departurePrefecture" name="departurePrefecture" required>
+                    <option value="">選択してください</option>
+                    <option value="北海道">北海道</option>
+                    <option value="青森県">青森県</option>
+                    <option value="岩手県">岩手県</option>
+                    <option value="宮城県">宮城県</option>
+                    <option value="秋田県">秋田県</option>
+                    <option value="山形県">山形県</option>
+                    <option value="福島県">福島県</option>
+                    <option value="茨城県">茨城県</option>
+                    <option value="栃木県">栃木県</option>
+                    <option value="群馬県">群馬県</option>
+                    <option value="埼玉県">埼玉県</option>
+                    <option value="千葉県">千葉県</option>
+                    <option value="東京都">東京都</option>
+                    <option value="神奈川県">神奈川県</option>
+                    <option value="新潟県">新潟県</option>
+                    <option value="富山県">富山県</option>
+                    <option value="石川県">石川県</option>
+                    <option value="福井県">福井県</option>
+                    <option value="山梨県">山梨県</option>
+                    <option value="長野県">長野県</option>
+                    <option value="岐阜県">岐阜県</option>
+                    <option value="静岡県">静岡県</option>
+                    <option value="愛知県">愛知県</option>
+                    <option value="三重県">三重県</option>
+                    <option value="滋賀県">滋賀県</option>
+                    <option value="京都府">京都府</option>
+                    <option value="大阪府">大阪府</option>
+                    <option value="兵庫県">兵庫県</option>
+                    <option value="奈良県">奈良県</option>
+                    <option value="和歌山県">和歌山県</option>
+                    <option value="鳥取県">鳥取県</option>
+                    <option value="島根県">島根県</option>
+                    <option value="岡山県">岡山県</option>
+                    <option value="広島県">広島県</option>
+                    <option value="山口県">山口県</option>
+                    <option value="徳島県">徳島県</option>
+                    <option value="香川県">香川県</option>
+                    <option value="愛媛県">愛媛県</option>
+                    <option value="高知県">高知県</option>
+                    <option value="福岡県">福岡県</option>
+                    <option value="佐賀県">佐賀県</option>
+                    <option value="長崎県">長崎県</option>
+                    <option value="熊本県">熊本県</option>
+                    <option value="大分県">大分県</option>
+                    <option value="宮崎県">宮崎県</option>
+                    <option value="鹿児島県">鹿児島県</option>
+                    <option value="沖縄県">沖縄県</option>
+                </select>
+                <button type="button" id="getCurrentLocationButton" class="btn-small">現在地を取得</button>
+            </div>
+
+            <div class="form-group">
+                <label for="departureCity">出発地（市区町村）</label>
+                <select id="departureCity" name="departureCity" required>
+                    <option value="">都道府県を先に選択してください</option>
+                </select>
+            </div>
+
+            <!-- 旅行先 -->
+            <div class="form-group">
+                <label for="destinationPrefecture">旅行先（都道府県）</label>
+                <select id="destinationPrefecture" name="destinationPrefecture" required>
+                    <option value="">選択してください</option>
+                    <option value="北海道">北海道</option>
+                    <option value="青森県">青森県</option>
+                    <option value="岩手県">岩手県</option>
+                    <option value="宮城県">宮城県</option>
+                    <option value="秋田県">秋田県</option>
+                    <option value="山形県">山形県</option>
+                    <option value="福島県">福島県</option>
+                    <option value="茨城県">茨城県</option>
+                    <option value="栃木県">栃木県</option>
+                    <option value="群馬県">群馬県</option>
+                    <option value="埼玉県">埼玉県</option>
+                    <option value="千葉県">千葉県</option>
+                    <option value="東京都">東京都</option>
+                    <option value="神奈川県">神奈川県</option>
+                    <option value="新潟県">新潟県</option>
+                    <option value="富山県">富山県</option>
+                    <option value="石川県">石川県</option>
+                    <option value="福井県">福井県</option>
+                    <option value="山梨県">山梨県</option>
+                    <option value="長野県">長野県</option>
+                    <option value="岐阜県">岐阜県</option>
+                    <option value="静岡県">静岡県</option>
+                    <option value="愛知県">愛知県</option>
+                    <option value="三重県">三重県</option>
+                    <option value="滋賀県">滋賀県</option>
+                    <option value="京都府">京都府</option>
+                    <option value="大阪府">大阪府</option>
+                    <option value="兵庫県">兵庫県</option>
+                    <option value="奈良県">奈良県</option>
+                    <option value="和歌山県">和歌山県</option>
+                    <option value="鳥取県">鳥取県</option>
+                    <option value="島根県">島根県</option>
+                    <option value="岡山県">岡山県</option>
+                    <option value="広島県">広島県</option>
+                    <option value="山口県">山口県</option>
+                    <option value="徳島県">徳島県</option>
+                    <option value="香川県">香川県</option>
+                    <option value="愛媛県">愛媛県</option>
+                    <option value="高知県">高知県</option>
+                    <option value="福岡県">福岡県</option>
+                    <option value="佐賀県">佐賀県</option>
+                    <option value="長崎県">長崎県</option>
+                    <option value="熊本県">熊本県</option>
+                    <option value="大分県">大分県</option>
+                    <option value="宮崎県">宮崎県</option>
+                    <option value="鹿児島県">鹿児島県</option>
+                    <option value="沖縄県">沖縄県</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="destinationCity">旅行先（市区町村 / エリア）</label>
+                <select id="destinationCity" name="destinationCity" required>
+                    <option value="">都道府県を先に選択してください</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="destinationKeyword">旅行先フリーワード（任意）</label>
+                <input type="text" id="destinationKeyword" name="destinationKeyword" placeholder="観光地やグルメなどのキーワードを入力">
+            </div>
+
+            <!-- 日程 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="departureDate">出発日</label>
+                    <input type="date" id="departureDate" name="departureDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="duration">期間</label>
+                    <select id="duration" name="duration" required>
+                        <option value="">選択してください</option>
+                        <option value="日帰り">日帰り</option>
+                        <option value="1泊2日">1泊2日</option>
+                        <option value="2泊3日">2泊3日</option>
+                        <option value="3泊4日">3泊4日</option>
+                        <option value="4泊5日以上">4泊5日以上</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="people">人数</label>
+                <select id="people" name="people" required>
+                    <option value="">選択してください</option>
+                    <option value="1">1人</option>
+                    <option value="2">2人</option>
+                    <option value="3">3人</option>
+                    <option value="4">4人</option>
+                    <option value="5">5人</option>
+                    <option value="6以上">6人以上</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="budgetSlider">予算</label>
+                <div id="budgetSlider"></div>
+                <div class="budget-display">
+                    <span id="budgetMinText">0円</span>
+                    〜
+                    <span id="budgetMaxText">150,000円</span>
+                </div>
+                <input type="hidden" id="budgetMin" name="budgetMin" value="0">
+                <input type="hidden" id="budgetMax" name="budgetMax" value="150000">
+            </div>
+
+            <div class="form-group">
+                <button type="submit" id="submitButton" class="btn-submit">プラン候補を見る</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer class="page-footer">Travel Plan &nbsp;·&nbsp; 旅 so sweet</footer>
+
+<div id="loadingOverlay" hidden aria-live="polite" aria-busy="true">
+    <div class="loading-content">
+        <p>プランを生成中です</p>
+        <div class="loading-dots">
+            <span class="loading-dot"></span>
+            <span class="loading-dot"></span>
+            <span class="loading-dot"></span>
+        </div>
+        <p id="loadingMessage">3分ほどかかる場合があります。画面を閉じずにお待ちください。</p>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.3/jquery-ui.min.js"></script>
+<script src="./js/input-plan.js"></script>
 </body>
 
 </html>
