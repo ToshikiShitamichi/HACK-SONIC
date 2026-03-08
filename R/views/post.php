@@ -1,31 +1,4 @@
 <?php
-//プランテーブルの目的地を取得
-include('../../config/db.php'); 
-
-// データ受け取り
-$plan_id = $_GET['plan_id'] ?? null;
-
-
-if (!$plan_id) {
-    echo "プランが指定されていません。";
-    exit();
-}
-
-// DB接続
-$pdo = get_db();
-
-$sql = "SELECT * FROM plan_table WHERE id = :plan_id";
-
-$stmt = $pdo->prepare($sql);
-$stmt->bindValue(':plan_id', $plan_id, PDO::PARAM_INT);
-$stmt->execute();
-
-$plan = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$plan) {
-    echo "プランが存在しません。";
-    exit();
-}
 
 ?>
 <!DOCTYPE html>
@@ -138,13 +111,31 @@ if (!$plan) {
 <div class="postCard">
   <form action="../controller/post_act.php" method="POST" enctype="multipart/form-data">
 
-  <input type="hidden" name="plan_id" value="<?= $plan_id ?>">
-
     <div class="tags">
-        <span class="tag">📍<?= htmlspecialchars($plan["prefecture"]) ?></span>
-        <span class="tag">🏙<?= htmlspecialchars($plan["city"]) ?></span>
-        <span class="tag">📌<?= htmlspecialchars($plan["destination"]) ?></span>
-        <span class="tag">🏷<?= htmlspecialchars($plan["category"]) ?></span>
+        <select id="region" name="region">
+            <option value="">🗾 地方</option>
+            <option value="hokkaido">北海道</option>
+            <option value="tohoku">東北</option>
+            <option value="kanto">関東</option>
+            <option value="chubu">中部</option>
+            <option value="kansai">関西</option>
+            <option value="chugoku">中国</option>
+            <option value="shikoku">四国</option>
+            <option value="kyushu">九州</option>
+        </select>
+
+        <select name="prefecture" id="prefecture">
+            <option value="">🔍 都道府県</option>
+        </select>
+
+        <select name="category">
+            <option value="">🏷️ カテゴリー</option>
+            <option value="観光">観光</option>
+            <option value="グルメ">グルメ</option>
+            <option value="温泉">温泉</option>
+            <option value="自然">自然</option>
+        </select>
+
     </div>
       <textarea name="text" id="text" placeholder="どんな旅だった？"></textarea>
       <input type="file" name="image" accept="image/*">
@@ -161,6 +152,31 @@ if (!$plan) {
     $('#cancel').on('click', function(){
         window.location.href = '../../index.php';
     });
+
+    const prefectures = {
+        hokkaido: ["北海道"],
+        tohoku: ["青森", "岩手", "宮城", "秋田", "山形", "福島"],
+        kanto: ["東京", "神奈川", "千葉", "埼玉", "茨城", "栃木", "群馬"],
+        chubu: ["新潟", "長野", "山梨", "静岡", "愛知", "岐阜", "富山", "石川", "福井"],
+        kansai: ["大阪", "京都", "兵庫", "奈良", "滋賀", "和歌山"],
+        chugoku: ["広島", "岡山", "山口", "鳥取", "島根"],
+        shikoku: ["香川", "徳島", "愛媛", "高知"],
+        kyushu: ["福岡", "佐賀", "長崎", "熊本", "大分", "宮崎", "鹿児島", "沖縄"]
+    };
+
+const region = document.getElementById("region");
+const pref = document.getElementById("prefecture");
+
+region.onchange = () => {
+    const list = prefectures[region.value] || [];
+    pref.innerHTML = '<option value="" disabled selected>🔍 都道府県</option>';
+    list.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p;
+        option.textContent = p;
+        pref.appendChild(option);
+    });
+};
 </script>
 
 </body>
