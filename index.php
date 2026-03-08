@@ -43,15 +43,17 @@ if ($category !== '') {
 
 $sql .= " GROUP BY p.id ";
 
-// いいねフィルターは HAVING で指定
 if ($filter === 'liked') {
-    $sql .= " HAVING SUM(l.user_id = :user_id) > 0 ";
+    $sql .= " HAVING SUM(l.user_id = :having_user_id) > 0 ";
 }
 
 $sql .= " ORDER BY p.created_at DESC ";
 
 $stmt = $pdo->prepare($sql);
 $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+if ($filter === 'liked') {
+    $stmt->bindValue(':having_user_id', $user_id, PDO::PARAM_INT);
+}
 if ($prefecture !== '') {
     $stmt->bindValue(':prefecture', $prefecture, PDO::PARAM_STR);
 }
@@ -114,94 +116,29 @@ foreach ($result as $record) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./assets/css/common.css">
     <link rel="stylesheet" href="./index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <title>R_Home</title>
-    <style>
-        /* ===== ヘッダー ===== */
-
-        .page-frame-top {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #fce8ec, #e8405c, #f47090, #e8405c);
-            z-index: 1000;
-        }
-
-        header {
-            background: #fff;
-            border-bottom: 1px solid #f0d0d8;
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: fixed;
-            top: 4px;
-            left: 0;
-            right: 0;
-            z-index: 999;
-            box-shadow: 0 2px 12px rgba(232, 64, 92, 0.06);
-        }
-
-        .header-brand {
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
-        }
-
-        .brand-kanji {
-            font-size: 22px;
-            font-weight: 900;
-            color: #e8405c;
-            letter-spacing: -1px;
-        }
-
-        .brand-roman {
-            font-size: 14px;
-            font-weight: 300;
-            color: #9a7885;
-            letter-spacing: 3px;
-        }
-
-        .header-nav {
-            display: flex;
-            gap: 16px;
-        }
-
-        .header-nav a {
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-decoration: none;
-            color: #9a7885;
-        }
-
-        .header-nav a:hover {
-            color: #e8405c;
-        }
-
-        body {
-            padding-top: 90px;
-        }
-    </style>
+    <title>ホーム | 旅 so sweet</title>
 </head>
 
 <body>
-    <div class="page-frame-top"></div>
-    <header>
-        <div class="header-brand">
-            <span class="brand-kanji">旅</span>
-            <span class="brand-roman">so sweet</span>
-        </div>
 
-        <nav class="header-nav">
-            <a href="./auth/logout.php">ログアウト</a>
-        </nav>
-    </header>
-    <main>
+<div class="page-frame-top"></div>
+
+<header>
+    <div class="header-brand">
+        <span class="brand-kanji">旅</span>
+        <span class="brand-roman">so sweet</span>
+    </div>
+    <nav class="header-nav">
+        <a href="./quests/quest_list.php">旅クエスト</a>
+        <a href="./quests/my_quests.php">マイクエスト</a>
+        <a href="./auth/logout.php">ログアウト</a>
+    </nav>
+</header>
+
+<main>
         <div id="quizArea">
             <?php include('./quiz/quiz-top-component.php'); ?>
             <!-- <h2>クイズ</h2>
@@ -213,8 +150,8 @@ foreach ($result as $record) {
         </div>
 
         <div id="linkArea">
-            <a href="./input-plan.html">旅プラン</a>
-            <a href="./quests/my_quests.php">旅クエスト</a>
+            <a href="./input-plan.html">旅プラン生成</a>
+            <a href="./quests/quest_list.php">旅クエスト</a>
         </div>
 
         <div id="timeLine">
@@ -222,7 +159,7 @@ foreach ($result as $record) {
             <div class="filterBar">
                 <a href="index.php?filter=">全件表示</a>
                 <a href="index.php?filter=liked">❤️ いいね</a>
-                <button id="filterBtn">🔍 検索</button>
+                <!-- <button id="filterBtn">🔍 検索</button> -->
             </div>
 
             <div id="filterArea" class="hidden">
@@ -284,6 +221,9 @@ foreach ($result as $record) {
             list.forEach(p => pref.innerHTML += `<option value="${p}">${p}</option>`);
         };
     </script>
+
+<footer class="page-footer">Travel Quest · 旅 so sweet</footer>
+
 </body>
 
 </html>

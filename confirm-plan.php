@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+session_start();
+
+require_once __DIR__ . '/config/db.php';
+
 function h($value): string
 {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
@@ -29,6 +33,25 @@ function difficultyLabel(string $difficulty): string
     }
 }
 
+function normalizeDifficulty(?string $difficulty): string
+{
+    $difficulty = strtolower(trim((string)$difficulty));
+
+    if (in_array($difficulty, ['easy', 'normal', 'hard'], true)) {
+        return $difficulty;
+    }
+
+    return 'normal';
+}
+
+function normalizeXp($xp): int
+{
+    if ($xp === null || $xp === '' || !is_numeric((string)$xp)) {
+        return 0;
+    }
+    return (int)$xp;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
 ?>
@@ -52,9 +75,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $selectedPlanEncoded = (string)($_POST['selectedPlan'] ?? '');
-$inputDataEncoded = (string)($_POST['inputData'] ?? '');
+$inputDataEncoded    = (string)($_POST['inputData'] ?? '');
 
-$plan = json_decode(base64_decode($selectedPlanEncoded), true);
+$plan  = json_decode(base64_decode($selectedPlanEncoded), true);
 $input = json_decode(base64_decode($inputDataEncoded), true);
 
 if (!is_array($plan) || !is_array($input)) {
@@ -78,6 +101,145 @@ if (!is_array($plan) || !is_array($input)) {
 <?php
     exit;
 }
+
+$userId = $_SESSION['user_id'] ?? null;
+$saveMessage = '';
+$saveError = '';
+
+// 二重登録防止用
+$planHash = hash('sha256', $selectedPlanEncoded);
+
+try {
+    $pdo = get_db();
+    $pdo->beginTransaction();
+
+    // 同じ確定POSTの二重保存を防ぐため、セッションに保存
+    if (!isset($_SESSION['saved_plan_hashes'])) {
+        $_SESSION['saved_plan_hashes'] = [];
+    }
+
+    if (!in_array($planHash, $_SESSION['saved_plan_hashes'], true)) {
+        $insertQuestSql = "
+            INSERT INTO quests (
+                title,
+                description,
+                xp,
+                difficulty,
+                location,
+                image_url,
+                created_at,
+                updated_at
+            ) VALUES (
+                :title,
+                :description,
+                :xp,
+                :difficulty,
+                :location,
+                :image_url,
+                NOW(),
+                NOW()
+            )
+        ";
+        $stmtQuest = $pdo->prepare($insertQuestSql);
+
+        $goalQuestId = null;
+
+        // ----------------------------
+        // 1. ゴールを quests に保存
+        // ----------------------------
+        if (!empty($plan['goal']) && is_array($plan['goal'])) {
+            $goalTitle = trim((string)($plan['goal']['name'] ?? ''));
+            if ($goalTitle === '') {
+                $goalTitle = 'ゴール';
+            }
+
+            $goalDescription = trim((string)($plan['goal']['description'] ?? ''));
+            $goalLocation    = trim((string)($plan['goal']['area'] ?? ''));
+            $goalImageUrl    = trim((string)($plan['goal']['image'] ?? ''));
+
+            $stmtQuest->execute([
+                ':title'       => $goalTitle,
+                ':description' => $goalDescription !== '' ? $goalDescription : null,
+                ':xp'          => 0,
+                ':difficulty'  => 'normal',
+                ':location'    => $goalLocation !== '' ? $goalLocation : null,
+                ':image_url'   => $goalImageUrl !== '' ? $goalImageUrl : null,
+            ]);
+
+            $goalQuestId = (int)$pdo->lastInsertId();
+        }
+
+        // ----------------------------
+        // 2. クエストを quests に保存
+        // ----------------------------
+        if (!empty($plan['quests']) && is_array($plan['quests'])) {
+            foreach ($plan['quests'] as $quest) {
+                if (!is_array($quest)) {
+                    continue;
+                }
+
+                $title = trim((string)($quest['title'] ?? ''));
+                if ($title === '') {
+                    $title = 'クエスト';
+                }
+
+                $description = trim((string)($quest['description'] ?? ''));
+                $xp          = normalizeXp($quest['exp'] ?? 0);
+                $difficulty  = normalizeDifficulty($quest['difficulty'] ?? 'normal');
+
+                // place を優先、なければ area を保存
+                $location = trim((string)($quest['place'] ?? ''));
+                if ($location === '') {
+                    $location = trim((string)($quest['area'] ?? ''));
+                }
+
+                $imageUrl = trim((string)($quest['image'] ?? ''));
+
+                $stmtQuest->execute([
+                    ':title'       => $title,
+                    ':description' => $description !== '' ? $description : null,
+                    ':xp'          => $xp,
+                    ':difficulty'  => $difficulty,
+                    ':location'    => $location !== '' ? $location : null,
+                    ':image_url'   => $imageUrl !== '' ? $imageUrl : null,
+                ]);
+            }
+        }
+
+        // ----------------------------
+        // 3. user_quests には goal のみ保存
+        // ----------------------------
+        if ($userId !== null && $goalQuestId !== null) {
+            $insertUserQuestSql = "
+                INSERT INTO user_quests (
+                    user_id,
+                    quest_id
+                ) VALUES (
+                    :user_id,
+                    :quest_id
+                )
+            ";
+            $stmtUserQuest = $pdo->prepare($insertUserQuestSql);
+
+            $stmtUserQuest->execute([
+                ':user_id'  => (int)$userId,
+                ':quest_id' => $goalQuestId,
+            ]);
+        }
+
+        $_SESSION['saved_plan_hashes'][] = $planHash;
+        $saveMessage = 'ゴールとクエスト情報を保存しました。';
+    } else {
+        $saveMessage = 'このプラン情報はすでに保存済みです。';
+    }
+
+    $pdo->commit();
+} catch (Throwable $e) {
+    if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    $saveError = '保存に失敗しました: ' . $e->getMessage();
+}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -85,194 +247,179 @@ if (!is_array($plan) || !is_array($input)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>確定した旅行プラン</title>
+    <title>確定した旅行プラン | 旅 so sweet</title>
+    <link rel="stylesheet" href="./assets/css/common.css">
     <style>
-        /* ===== ヘッダー（共通デザイン） ===== */
-
-        .page-frame-top {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #fce8ec, #e8405c, #f47090, #e8405c);
-            z-index: 1000;
+        .plan-card {
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 4px 16px rgba(232, 64, 92, 0.06);
         }
 
-        header {
-            background: #fff;
-            border-bottom: 1px solid #f0d0d8;
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            position: fixed;
-            top: 4px;
-            left: 0;
-            right: 0;
-
-            z-index: 999;
-            box-shadow: 0 2px 12px rgba(232, 64, 92, 0.06);
+        .plan-card h2 {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 16px;
         }
 
-        .header-brand {
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
-        }
-
-        .brand-kanji {
-            font-size: 22px;
-            font-weight: 900;
-            color: #e8405c;
-            letter-spacing: -1px;
-        }
-
-        .brand-roman {
+        .plan-card p {
             font-size: 14px;
-            font-weight: 300;
-            color: #9a7885;
-            letter-spacing: 3px;
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 12px;
         }
 
-        .header-nav {
-            display: flex;
-            gap: 16px;
-        }
-
-        .header-nav a {
-            font-size: 12px;
+        .section-heading {
+            font-size: 11px;
             font-weight: 700;
-            letter-spacing: 1px;
-            text-decoration: none;
-            color: #9a7885;
-        }
-
-        .header-nav a:hover {
-            color: #e8405c;
-        }
-
-        /* ヘッダー固定分の余白 */
-
-        body {
-            padding-top: 90px;
-        }
-
-        body {
-            margin: 0;
-            padding: 16px;
-            background: #f7f7f7;
-            font-family: sans-serif;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .card {
-            border: 1px solid #cccccc;
-            background: #fff;
-            padding: 16px;
-            box-sizing: border-box;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin: 28px 0 16px;
+            padding: 10px 16px;
+            background: var(--pink-pale);
+            border-left: 4px solid var(--pink);
+            border-radius: 0 10px 10px 0;
         }
 
         .spot-card {
-            border: 1px solid #dddddd;
-            padding: 12px;
-            margin-top: 12px;
-            background: #fafafa;
+            border: 1.5px solid var(--border);
+            padding: 18px;
+            margin-top: 14px;
+            background: var(--cream);
+            border-radius: 14px;
+        }
+
+        .spot-card h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .spot-card > div:first-child strong {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
         }
 
         .spot-card img {
-            max-width: 100%;
-            height: auto;
-            margin-top: 8px;
+            width: 100%;
+            max-width: 360px;
+            height: 200px;
+            object-fit: cover;
+            margin-top: 12px;
             display: block;
+            border-radius: 12px;
+            border: 1px solid var(--border);
         }
 
         .spot-meta {
-            margin-top: 8px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.6;
         }
 
         .spot-meta div {
-            margin-top: 4px;
+            margin-top: 6px;
+        }
+
+        .spot-meta a {
+            color: var(--pink);
+            font-weight: 600;
         }
 
         .quest-number {
             display: inline-block;
-            font-weight: bold;
-            margin-bottom: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            background: var(--pink);
+            color: var(--white);
+            border-radius: 50px;
+            margin-bottom: 10px;
         }
 
         .button-row {
-            margin-top: 24px;
+            margin-top: 32px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
-        .back-button {
-            display: inline-block;
-            padding: 10px 16px;
-            background: #222;
-            color: #fff;
-            text-decoration: none;
+        .message-box {
+            margin-bottom: 20px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .sub-box {
-            margin-top: 16px;
-            background: #fff;
-            border: 1px solid #ddd;
-            padding: 16px;
+        .message-success {
+            background: var(--pink-pale);
+            border: 1.5px solid var(--border);
+            color: var(--pink-deep);
+        }
+
+        .message-error {
+            background: #fff0f0;
+            border: 1.5px solid #ffc8c8;
+            color: #d94040;
+        }
+
+        .notes-list {
+            margin-top: 12px;
+            padding-left: 20px;
+        }
+
+        .notes-list li {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            line-height: 1.6;
         }
     </style>
 </head>
 
 <body>
-    <div class="page-frame-top"></div>
-    <header>
-        <div class="header-brand">
-            <span class="brand-kanji">旅</span>
-            <span class="brand-roman">so sweet</span>
-        </div>
 
-        <nav class="header-nav">
-            <a href="./auth/logout.php">ログアウト</a>
-        </nav>
-    </header>
-    <div class="container">
-        <h1>確定した旅行プラン</h1>
+<div class="page-frame-top"></div>
 
-        <!-- <div class="sub-box">
-            <h2>入力内容</h2>
-            <dl>
-                <dt>出発地</dt>
-                <dd><?= h(($input['departurePrefecture'] ?? '') . ' ' . ($input['departureCity'] ?? '')) ?></dd>
+<header>
+    <div class="header-brand">
+        <span class="brand-kanji">旅</span>
+        <span class="brand-roman">so sweet</span>
+    </div>
+    <nav class="header-nav">
+        <a href="./index.php">ホーム</a>
+        <a href="./quests/quest_list.php">旅クエスト</a>
+        <a href="./auth/logout.php">ログアウト</a>
+    </nav>
+</header>
 
-                <dt>旅行先</dt>
-                <dd><?= h(($input['destinationPrefecture'] ?? '') . ' ' . ($input['destinationCity'] ?? '')) ?></dd>
+<section class="hero">
+    <p class="hero-eyebrow">Plan Confirmed</p>
+    <h1 class="hero-title">旅行<em>プラン</em>確定</h1>
+    <p class="hero-subtitle">クエストとして保存されました</p>
+</section>
 
-                <dt>旅行先キーワード</dt>
-                <dd><?= h($input['destinationKeyword'] ?? '') ?: '未入力' ?></dd>
+<main>
+        <?php if ($saveMessage !== ''): ?>
+            <div class="message-box message-success">&#10003; <?= h($saveMessage) ?></div>
+        <?php endif; ?>
 
-                <dt>出発日</dt>
-                <dd><?= h($input['departureDate'] ?? '') ?></dd>
+        <?php if ($saveError !== ''): ?>
+            <div class="message-box message-error">&#10007; <?= h($saveError) ?></div>
+        <?php endif; ?>
 
-                <dt>期間</dt>
-                <dd><?= h($input['duration'] ?? '') ?></dd>
-
-                <dt>人数</dt>
-                <dd><?= h($input['people'] ?? '') ?></dd>
-
-                <dt>予算</dt>
-                <dd>
-                    <?= h(formatYen($input['budgetMin'] ?? '')) ?>
-                    〜
-                    <?= h(formatYen($input['budgetMax'] ?? '')) ?>
-                </dd>
-            </dl>
-        </div> -->
-
-        <section class="card">
+        <section class="plan-card">
             <h2><?= h($plan['plan_title'] ?? 'タイトル未設定') ?></h2>
 
             <?php if (!empty($plan['concept'])): ?>
@@ -293,8 +440,8 @@ if (!is_array($plan) || !is_array($input)) {
             <?php endif; ?>
 
             <?php if (!empty($plan['goal']) && is_array($plan['goal'])): ?>
+                <h4 class="section-heading">ゴール地点</h4>
                 <div class="spot-card">
-                    <h3>ゴール地点</h3>
                     <div><strong><?= h($plan['goal']['name'] ?? '') ?></strong></div>
 
                     <?php if (!empty($plan['goal']['description'])): ?>
@@ -326,7 +473,7 @@ if (!is_array($plan) || !is_array($input)) {
             <?php endif; ?>
 
             <?php if (!empty($plan['quests']) && is_array($plan['quests'])): ?>
-                <h3>クエスト</h3>
+                <h4 class="section-heading">クエスト</h4>
 
                 <?php foreach ($plan['quests'] as $qIndex => $quest): ?>
                     <div class="spot-card">
@@ -383,21 +530,23 @@ if (!is_array($plan) || !is_array($input)) {
             <?php endif; ?>
 
             <?php if (!empty($plan['notes']) && is_array($plan['notes'])): ?>
-                <div>
-                    <h3>メモ</h3>
-                    <ul>
-                        <?php foreach ($plan['notes'] as $note): ?>
-                            <li><?= h($note) ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
+                <h4 class="section-heading">メモ</h4>
+                <ul class="notes-list">
+                    <?php foreach ($plan['notes'] as $note): ?>
+                        <li><?= h($note) ?></li>
+                    <?php endforeach; ?>
+                </ul>
             <?php endif; ?>
         </section>
 
         <div class="button-row">
-            <a href="./input-plan.html" class="back-button">入力フォームに戻る</a>
+            <a href="./quests/quest_list.php" class="btn-primary">クエスト一覧にすすむ</a>
+            <a href="./index.php" class="btn-secondary">ホームに戻る</a>
         </div>
-    </div>
+</main>
+
+<footer class="page-footer">Travel Quest · 旅 so sweet</footer>
+
 </body>
 
 </html>

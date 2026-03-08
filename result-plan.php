@@ -110,98 +110,11 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>旅行プラン提案結果</title>
+    <title>旅行プラン提案結果 | 旅 so sweet</title>
+    <link rel="stylesheet" href="./assets/css/common.css">
     <style>
-        /* ===== ヘッダー ===== */
-
-        .page-frame-top {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #fce8ec, #e8405c, #f47090, #e8405c);
-            z-index: 1000;
-        }
-
-        header {
-            background: #fff;
-            border-bottom: 1px solid #f0d0d8;
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: fixed;
-            top: 4px;
-            left: 0;
-            right: 0;
-            z-index: 999;
-            box-shadow: 0 2px 12px rgba(232, 64, 92, 0.06);
-        }
-
-        .header-brand {
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
-        }
-
-        .brand-kanji {
-            font-size: 22px;
-            font-weight: 900;
-            color: #e8405c;
-            letter-spacing: -1px;
-        }
-
-        .brand-roman {
-            font-size: 14px;
-            font-weight: 300;
-            color: #9a7885;
-            letter-spacing: 3px;
-        }
-
-        .header-nav {
-            display: flex;
-            gap: 16px;
-        }
-
-        .header-nav a {
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-decoration: none;
-            color: #9a7885;
-        }
-
-        .header-nav a:hover {
-            color: #e8405c;
-        }
-
-        /* ===== ページ全体 ===== */
-
-        body {
-            margin: 0;
-            padding-top: 90px;
-            background: #faf6f8;
-            font-family: 'Roboto', sans-serif;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        h1 {
-            margin-bottom: 30px;
-        }
-
-        /* ===== エラー ===== */
-
-        .error {
-            border: 1px solid #cc0000;
-            background: #fff;
-            padding: 16px;
-            border-radius: 8px;
+        main {
+            max-width: 1200px;
         }
 
         /* ===== プランレイアウト ===== */
@@ -209,48 +122,88 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
         .plans-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
+            gap: 20px;
             align-items: start;
         }
 
         /* ===== プランカード ===== */
 
         .plan-column {
-            border: none;
-            background: #fff;
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
             padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 16px rgba(232, 64, 92, 0.06);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
         }
 
-        /* ===== 見出し ===== */
+        .plan-column:hover {
+            transform: translateY(-4px);
+            border-color: var(--pink-lt);
+            box-shadow: 0 12px 32px rgba(232, 64, 92, 0.12);
+        }
+
+        .plan-column h2 {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--pink);
+            margin-bottom: 12px;
+        }
+
+        .plan-column h3 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .plan-column p {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
 
         .plan-column h4 {
-            margin: 24px 0 10px;
-            padding: 8px 12px;
-            background: #f8f4f6;
-            border-left: 4px solid #e8405c;
-            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin: 24px 0 12px;
+            padding: 10px 16px;
+            background: var(--pink-pale);
+            border-left: 4px solid var(--pink);
+            border-radius: 0 10px 10px 0;
         }
 
         /* ===== スポットカード ===== */
 
         .spot-card {
-            border: 1px solid #eee;
-            padding: 14px;
+            border: 1.5px solid var(--border);
+            padding: 16px;
             margin-top: 12px;
-            border-radius: 8px;
-            background: #fafafa;
+            background: var(--cream);
+            border-radius: 14px;
+        }
+
+        .spot-card > div:first-child {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
         }
 
         /* ===== 画像 ===== */
 
         .spot-image-wrap {
             width: 100%;
-            height: 220px;
+            height: 180px;
             margin-top: 12px;
             overflow: hidden;
-            border-radius: 8px;
+            background: var(--pink-pale);
+            border-radius: 12px;
         }
 
         .spot-image-wrap img {
@@ -263,48 +216,85 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
         /* ===== メタ情報 ===== */
 
         .spot-meta {
-            margin-top: 8px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.6;
         }
 
         .spot-meta div {
-            margin-top: 4px;
+            margin-top: 6px;
+        }
+
+        .spot-meta a {
+            color: var(--pink);
+            font-weight: 600;
         }
 
         /* ===== クエスト番号 ===== */
 
         .quest-number {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            background: var(--pink);
+            color: var(--white);
+            border-radius: 50px;
+            margin-bottom: 10px;
         }
 
         /* ===== 確定ボタン ===== */
 
         .confirm-box {
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid #eee;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
         }
 
         .confirm-button {
-            display: inline-block;
+            display: block;
             width: 100%;
-            padding: 14px 16px;
+            padding: 14px 20px;
             border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #e8405c, #f47090);
-            color: #fff;
-            font-size: 15px;
-            font-weight: 700;
+            background: linear-gradient(135deg, var(--pink-lt) 0%, var(--pink) 55%, var(--pink-deep) 100%);
+            color: var(--white);
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            border-radius: 50px;
             cursor: pointer;
+            box-shadow: 0 6px 20px rgba(232, 64, 92, 0.32);
+            transition: opacity 0.2s ease, transform 0.12s ease, box-shadow 0.2s ease;
         }
 
         .confirm-button:hover {
+            opacity: 0.92;
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(232, 64, 92, 0.25);
+            box-shadow: 0 10px 28px rgba(232, 64, 92, 0.42);
         }
 
-        /* ===== モバイル ===== */
+        .error-box {
+            background: #fff0f0;
+            border: 1.5px solid #ffc8c8;
+            color: #d94040;
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+        }
+
+        .error-box h2 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 24px;
+            color: var(--pink);
+            font-weight: 700;
+        }
 
         @media (max-width: 1024px) {
             .plans-grid {
@@ -315,19 +305,28 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
 </head>
 
 <body>
-    <div class="page-frame-top"></div>
-    <header>
-        <div class="header-brand">
-            <span class="brand-kanji">旅</span>
-            <span class="brand-roman">so sweet</span>
-        </div>
 
-        <nav class="header-nav">
-            <a href="./auth/logout.php">ログアウト</a>
-        </nav>
-    </header>
-    <div class="container">
-        <h1>旅行プラン提案結果</h1>
+<div class="page-frame-top"></div>
+
+<header>
+    <div class="header-brand">
+        <span class="brand-kanji">旅</span>
+        <span class="brand-roman">so sweet</span>
+    </div>
+    <nav class="header-nav">
+        <a href="./index.php">ホーム</a>
+        <a href="./quests/quest_list.php">旅クエスト</a>
+        <a href="./auth/logout.php">ログアウト</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <p class="hero-eyebrow">Travel Plan Results</p>
+    <h1 class="hero-title">旅行<em>プラン</em>提案結果</h1>
+    <p class="hero-subtitle">AIが生成した旅行プラン候補</p>
+</section>
+
+<main>
 
         <!-- <section>
             <h2>入力内容</h2>
@@ -368,7 +367,7 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
         </section> -->
 
         <?php if ($pageError !== null): ?>
-            <section class="error">
+            <div class="error-box">
                 <h2>エラー</h2>
                 <p><?= h($pageError) ?></p>
 
@@ -380,11 +379,10 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
                     </ul>
                 <?php endif; ?>
 
-                <p><a href="./input-plan.html">入力フォームに戻る</a></p>
-            </section>
+                <a href="./input-plan.html" class="btn-secondary">入力フォームに戻る</a>
+            </div>
         <?php else: ?>
-            <section>
-                <h2>AIが生成した旅行プラン候補</h2>
+            <div class="page-section-title">プラン候補（<?= count($plans) ?>件）</div>
 
                 <?php if (!empty($plans)): ?>
                     <div class="plans-grid">
@@ -527,13 +525,20 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
-                    <p>プラン候補を取得できませんでした。</p>
+                    <div class="card-static text-center" style="padding: 60px 20px;">
+                        <p class="text-muted" style="font-size: 15px;">プラン候補を取得できませんでした。</p>
+                        <a href="./input-plan.html" class="btn-secondary mt-4">入力フォームに戻る</a>
+                    </div>
                 <?php endif; ?>
-            </section>
         <?php endif; ?>
 
-        <p><a href="./input-plan.html">入力フォームに戻る</a></p>
-    </div>
+        <div class="text-center mt-6">
+            <a href="./input-plan.html" class="back-link">入力フォームに戻る</a>
+        </div>
+</main>
+
+<footer class="page-footer">Travel Quest · 旅 so sweet</footer>
+
 </body>
 
 </html>
