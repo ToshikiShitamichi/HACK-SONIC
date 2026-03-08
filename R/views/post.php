@@ -2,7 +2,9 @@
 //プランテーブルの目的地を取得
 include('./R/config/db.php'); 
 
+// データ受け取り
 $plan_id = $_GET['plan_id'] ?? null;
+
 
 if (!$plan_id) {
     echo "プランが指定されていません。";
