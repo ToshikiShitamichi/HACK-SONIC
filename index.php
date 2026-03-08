@@ -1,8 +1,8 @@
 <?php
-include('functions.php');
+include('./R/config/db.php');
 session_start();
 $user_id = $_SESSION['user_id'] ?? null;
-$pdo = connect_to_db_pre();
+$pdo = get_db();
 
 // フィルター
 $filter = $_GET['filter'] ?? '';
@@ -87,7 +87,7 @@ foreach ($result as $record) {
         </span>
         <span class="time">投稿: ' . $record['created_at'] . '</span>
         <a class="likeBtn ' . $likedClass . '" 
-           href="./controller/like_create.php?user_id=' . $user_id . '&post_id=' . $record['id'] . '">
+           href="./R/controller/like_create.php?user_id=' . $user_id . '&post_id=' . $record['id'] . '">
            ♥<span class="likeCount">' . $record['like_count'] . '</span>
         </a>
         ' . $deleteBtn . '
