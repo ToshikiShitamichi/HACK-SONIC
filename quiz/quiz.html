@@ -260,13 +260,22 @@
                     exclude: usedQuizIds
                 },
                 success: function (data) {
-                    if (data.error) {
+
+                    console.log("API DATA", data);
+
+                    if (!data.success) {
                         showResult();
                         return;
                     }
-                    currentQuiz = data;
-                    usedQuizIds.push(data.id);
-                    displayQuiz(data);
+
+                    const quiz = data.quiz;
+
+                    console.log("QUIZ", quiz);
+
+                    currentQuiz = quiz;
+                    usedQuizIds.push(quiz.id);
+
+                    displayQuiz(quiz);
                 },
                 error: function (xhr, status, error) {
                     console.error("Ajax Error:", status, error, xhr.responseText);
@@ -402,7 +411,7 @@
             let navHtml = `<div class="button-group">
                 <button onclick="location.href='quiz-top.html'">クイズのトップに戻る</button>
                 <button onclick="location.href='quiz-start.html'">出題設定に戻る</button>
-                <button onclick="location.href='/'">アプリトップに戻る</button>
+                <button onclick="location.href='/HACK-SONIC/index.php'">アプリトップに戻る</button>
             </div>`;
 
             $("#result").append(resultsHtml + favoritesHtml + navHtml);
