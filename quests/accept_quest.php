@@ -1,6 +1,6 @@
 <?php
-session_start();
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../auth/auth_check.php';
+require_once __DIR__ . '/../config/db.php';
 
 // POST 以外は弾く
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $quest_id = isset($_POST['quest_id']) ? (int)$_POST['quest_id'] : 0;
-$user_id  = 1; // 固定（セッション実装後に差し替え）
+$user_id  = $_SESSION['user_id'];
 
 if ($quest_id <= 0) {
     header('Location: quest_list.php');

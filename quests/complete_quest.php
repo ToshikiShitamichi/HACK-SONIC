@@ -1,6 +1,6 @@
 <?php
-session_start();
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../auth/auth_check.php';
+require_once __DIR__ . '/../config/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: my_quests.php');
@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $quest_id = isset($_POST['quest_id']) ? (int)$_POST['quest_id'] : 0;
-$user_id  = 1; // 固定（セッション実装後に差し替え）
+$user_id  = $_SESSION['user_id'];
 
 if ($quest_id <= 0) {
     header('Location: my_quests.php');
@@ -25,7 +25,6 @@ if ($quest_id <= 0) {
 //   Lv5:  2000 XP〜 ...
 // ==========================================
 function calc_level(int $total_xp): int {
-    // level = floor((1 + sqrt(1 + total_xp/50)) / 2)  を整数解で近似
     $level = (int)floor((1 + sqrt(1 + $total_xp / 50)) / 2);
     return max(1, min($level, 99));
 }
@@ -84,8 +83,16 @@ try {
 
     $xp_gain = (int)$quest['xp'];
 
-    // ③④⑤ total_xp を加算し、レベル・称号を更新
-    //       user_levels 行がなければ INSERT、あれば UPDATE
+    // ③ total_xp を加算し、レベル・称号を更新
+    $stmt2 = $pdo->prepare('SELECT total_xp FROM user_levels WHERE user_id = ?');
+    $stmt2->execute([$user_id]);
+    $row = $stmt2->fetch();
+    $current_xp   = $row ? (int)$row['total_xp'] : 0;
+    $new_total_xp = $current_xp + $xp_gain;
+    $new_level    = calc_level($new_total_xp);
+    $new_title    = level_title($new_level);
+    $old_level    = calc_level($current_xp);
+
     $stmt = $pdo->prepare(
         'INSERT INTO user_levels (user_id, total_xp, level, title)
          VALUES (?, ?, ?, ?)
@@ -94,17 +101,6 @@ try {
              level    = VALUES(level),
              title    = VALUES(title)'
     );
-
-    // 現在の total_xp を取得してレベル計算
-    $stmt2 = $pdo->prepare('SELECT total_xp FROM user_levels WHERE user_id = ?');
-    $stmt2->execute([$user_id]);
-    $row = $stmt2->fetch();
-    $current_xp  = $row ? (int)$row['total_xp'] : 0;
-    $new_total_xp = $current_xp + $xp_gain;
-    $new_level    = calc_level($new_total_xp);
-    $new_title    = level_title($new_level);
-    $old_level    = calc_level($current_xp);
-
     $stmt->execute([$user_id, $xp_gain, $new_level, $new_title]);
 
     $pdo->commit();
