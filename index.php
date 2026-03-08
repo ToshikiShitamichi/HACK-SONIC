@@ -151,7 +151,7 @@ foreach ($result as $record) {
             <div class="filterBar">
                 <a href="index.php?filter=">全件表示</a>
                 <a href="index.php?filter=liked">❤️ いいね</a>
-                <button id="filterBtn">🔍 検索</button>
+                <!-- <button id="filterBtn">🔍 検索</button> -->
             </div>
 
             <div id="filterArea" class="hidden">
