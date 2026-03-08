@@ -119,32 +119,60 @@ try {
     }
 
     if (!in_array($planHash, $_SESSION['saved_plan_hashes'], true)) {
-        $savedQuestIds = [];
+        $insertQuestSql = "
+            INSERT INTO quests (
+                title,
+                description,
+                xp,
+                difficulty,
+                location,
+                image_url,
+                created_at,
+                updated_at
+            ) VALUES (
+                :title,
+                :description,
+                :xp,
+                :difficulty,
+                :location,
+                :image_url,
+                NOW(),
+                NOW()
+            )
+        ";
+        $stmtQuest = $pdo->prepare($insertQuestSql);
 
+        $goalQuestId = null;
+
+        // ----------------------------
+        // 1. ゴールを quests に保存
+        // ----------------------------
+        if (!empty($plan['goal']) && is_array($plan['goal'])) {
+            $goalTitle = trim((string)($plan['goal']['name'] ?? ''));
+            if ($goalTitle === '') {
+                $goalTitle = 'ゴール';
+            }
+
+            $goalDescription = trim((string)($plan['goal']['description'] ?? ''));
+            $goalLocation    = trim((string)($plan['goal']['area'] ?? ''));
+            $goalImageUrl    = trim((string)($plan['goal']['image'] ?? ''));
+
+            $stmtQuest->execute([
+                ':title'       => $goalTitle,
+                ':description' => $goalDescription !== '' ? $goalDescription : null,
+                ':xp'          => 0,
+                ':difficulty'  => 'normal',
+                ':location'    => $goalLocation !== '' ? $goalLocation : null,
+                ':image_url'   => $goalImageUrl !== '' ? $goalImageUrl : null,
+            ]);
+
+            $goalQuestId = (int)$pdo->lastInsertId();
+        }
+
+        // ----------------------------
+        // 2. クエストを quests に保存
+        // ----------------------------
         if (!empty($plan['quests']) && is_array($plan['quests'])) {
-            $insertQuestSql = "
-                INSERT INTO quests (
-                    title,
-                    description,
-                    xp,
-                    difficulty,
-                    location,
-                    image_url,
-                    created_at,
-                    updated_at
-                ) VALUES (
-                    :title,
-                    :description,
-                    :xp,
-                    :difficulty,
-                    :location,
-                    :image_url,
-                    NOW(),
-                    NOW()
-                )
-            ";
-            $stmtQuest = $pdo->prepare($insertQuestSql);
-
             foreach ($plan['quests'] as $quest) {
                 if (!is_array($quest)) {
                     continue;
@@ -175,13 +203,13 @@ try {
                     ':location'    => $location !== '' ? $location : null,
                     ':image_url'   => $imageUrl !== '' ? $imageUrl : null,
                 ]);
-
-                $savedQuestIds[] = (int)$pdo->lastInsertId();
             }
         }
 
-        // user_quests に紐づけ保存（ログイン時のみ）
-        if ($userId !== null && !empty($savedQuestIds)) {
+        // ----------------------------
+        // 3. user_quests には goal のみ保存
+        // ----------------------------
+        if ($userId !== null && $goalQuestId !== null) {
             $insertUserQuestSql = "
                 INSERT INTO user_quests (
                     user_id,
@@ -193,18 +221,16 @@ try {
             ";
             $stmtUserQuest = $pdo->prepare($insertUserQuestSql);
 
-            foreach ($savedQuestIds as $questId) {
-                $stmtUserQuest->execute([
-                    ':user_id'  => (int)$userId,
-                    ':quest_id' => $questId,
-                ]);
-            }
+            $stmtUserQuest->execute([
+                ':user_id'  => (int)$userId,
+                ':quest_id' => $goalQuestId,
+            ]);
         }
 
         $_SESSION['saved_plan_hashes'][] = $planHash;
-        $saveMessage = 'クエスト情報を保存しました。';
+        $saveMessage = 'ゴールとクエスト情報を保存しました。';
     } else {
-        $saveMessage = 'このプランのクエスト情報はすでに保存済みです。';
+        $saveMessage = 'このプラン情報はすでに保存済みです。';
     }
 
     $pdo->commit();
@@ -212,7 +238,7 @@ try {
     if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    $saveError = 'クエスト情報の保存に失敗しました: ' . $e->getMessage();
+    $saveError = '保存に失敗しました: ' . $e->getMessage();
 }
 ?>
 <!DOCTYPE html>
@@ -447,8 +473,7 @@ try {
         </section>
 
         <div class="button-row">
-            <a href="./input-plan.html" class="back-button">入力フォームに戻る</a>
-            <a href="./R/views/post.php" class="back-button">SNSに投稿</a>
+            <a href="./quests/quest_list.php" class="back-button">クエスト一覧にすすむ</a>
         </div>
     </div>
 </body>
