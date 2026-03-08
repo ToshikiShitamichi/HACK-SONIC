@@ -43,15 +43,17 @@ if ($category !== '') {
 
 $sql .= " GROUP BY p.id ";
 
-// いいねフィルターは HAVING で指定
 if ($filter === 'liked') {
-    $sql .= " HAVING SUM(l.user_id = :user_id) > 0 ";
+    $sql .= " HAVING SUM(l.user_id = :having_user_id) > 0 ";
 }
 
 $sql .= " ORDER BY p.created_at DESC ";
 
 $stmt = $pdo->prepare($sql);
 $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+if ($filter === 'liked') {
+    $stmt->bindValue(':having_user_id', $user_id, PDO::PARAM_INT);
+}
 if ($prefecture !== '') {
     $stmt->bindValue(':prefecture', $prefecture, PDO::PARAM_STR);
 }
