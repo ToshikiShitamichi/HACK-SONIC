@@ -1,0 +1,386 @@
+/* =====================
+基本
+===================== */
+
+*{
+box-sizing:border-box;
+}
+
+body{
+margin:0;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+background:#f4f6f8;
+color:#333;
+}
+
+main{
+padding:16px;
+max-width:700px;
+margin:auto;
+}
+
+/* =====================
+ヘッダー
+===================== */
+
+header{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:14px 16px;
+background:linear-gradient(135deg,#ff9966,#ff5e62);
+color:white;
+}
+
+/* タイトル */
+
+header h1{
+margin:0;
+font-size:20px;
+font-weight:700;
+}
+
+
+/* リンクグループ */
+.headerLinks{
+display:flex;
+gap:8px;   /* ←ここで余白を調整 */
+}
+
+.headerLinks a{
+text-decoration:none;
+background:white;
+color:#ff5e62;
+padding:6px 12px;
+border-radius:6px;
+font-size:13px;
+}
+
+/* =====================
+クイズ
+===================== */
+
+#quizArea{
+background:white;
+padding:16px;
+border-radius:12px;
+box-shadow:0 3px 8px rgba(0,0,0,0.05);
+margin-bottom:10px;
+}
+
+#quizArea h2{
+margin:0 0 10px 0;
+font-size:16px;
+}
+
+#quizArea p{
+font-size:14px;
+}
+
+#quizArea input{
+width:100%;
+padding:10px;
+border-radius:6px;
+border:1px solid #ddd;
+margin-top:8px;
+}
+
+#quizArea button{
+margin-top:10px;
+width:100%;
+padding:10px;
+border:none;
+border-radius:6px;
+background:#4CAF50;
+color:white;
+font-size:14px;
+}
+
+/* =====================
+リンクエリア
+===================== */
+
+#linkArea{
+display:flex;
+justify-content:flex-end;
+gap:10px;
+margin:10px 0 20px 0;
+}
+
+#linkArea a{
+text-decoration:none;
+background:white;
+padding:10px 14px;
+border-radius:10px;
+box-shadow:0 2px 6px rgba(0,0,0,0.05);
+font-size:13px;
+}
+
+/* =====================
+タイムライン
+===================== */
+
+#timeLine h2{
+margin:0 0 10px 0;
+font-size:18px;
+}
+
+#timeLine a{
+font-size:12px;
+margin-right:10px;
+}
+
+/* =====================
+投稿カード
+===================== */
+
+.postCard{
+background:white;
+border-radius:12px;
+margin:14px 0;
+box-shadow:0 3px 10px rgba(0,0,0,0.06);
+overflow:hidden;
+}
+
+/* 投稿ヘッダー */
+
+.postHeader{
+display:flex;
+align-items:center;
+gap:8px;
+padding:12px;
+border-bottom:1px solid #eee;
+/* background-color: ; */
+}
+
+.user{
+display:flex;
+align-items:center;
+gap:6px;
+font-weight:600;
+font-size:13px;
+}
+
+.user i{
+background:#e8edf2;
+padding:6px;
+border-radius:50%;
+font-size:11px;
+}
+
+.time{
+margin-left:auto;
+font-size:11px;
+color:#888;
+}
+
+.likeBtn {
+    margin-left:10px;
+    text-decoration:none;
+    color:#777; /* 初期グレー */
+    font-size:14px;
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+}
+
+.likeBtn.liked {
+    color:#ff4d6d; /* いいね済みは赤 */
+    font-weight: bold;
+}
+
+/* likeCount は色を親に合わせる */
+.likeBtn .likeCount {
+    color: inherit;
+    font-weight:600;
+}
+
+/* 削除 */
+
+.deleteBtn{
+margin-left:8px;
+font-size:11px;
+color:#e63946;
+text-decoration:none;
+}
+
+/* ===== 投稿カード タグ & プランリンク ===== */
+.tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:8px;
+}
+
+.tag{
+    background:#f1f3f5;
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:12px;
+    color:#555;
+}
+
+.planLink{
+    display:inline-block;
+    margin-top:6px;
+    font-size:12px;
+    color:#2b6cb0;
+    text-decoration:underline;
+}
+.hidden{
+    display:none;
+}
+
+/* 投稿本文 */
+
+.postBody{
+padding:14px;
+}
+
+.postBody p{
+margin:0 0 10px 0;
+font-size:14px;
+line-height:1.5;
+}
+
+.postBody img{
+width:100%;
+border-radius:10px;
+margin-top:8px;
+object-fit:cover;
+}
+
+/* =====================
+投稿ボタン
+===================== */
+
+#postBtn{
+position:fixed;
+bottom:20px;
+right:20px;
+width:56px;
+height:56px;
+border-radius:50%;
+background:#ff5e62;
+color:white;
+font-size:34px;
+display:flex;
+align-items:center;
+justify-content:center;
+text-decoration:none;
+box-shadow:0 6px 16px rgba(0,0,0,0.25);
+}
+
+/* =====================
+タブレット対応
+===================== */
+
+@media (min-width:768px){
+
+main{
+padding:30px;
+}
+
+#quizArea{
+display:flex;
+flex-direction:column;
+}
+
+#quizArea button{
+width:200px;
+}
+
+#linkArea{
+justify-content:flex-end;
+gap:20px;
+}
+
+.postHeader{
+padding:16px;
+}
+
+.postBody{
+padding:18px;
+}
+
+}
+
+/* =====================
+PC対応
+===================== */
+
+@media (min-width:1100px){
+
+main{
+max-width:900px;
+}
+
+#quizArea{
+padding:24px;
+}
+
+.postBody img{
+max-height:400px;
+}
+
+}
+
+/* =====================
+フィルタバー
+===================== */
+
+.filterBar{
+display:flex;
+gap:10px;
+margin-bottom:10px;
+}
+
+.filterBar a,
+.filterBar button{
+font-size:12px;
+padding:6px 12px;
+border-radius:8px;
+border:none;
+background:white;
+box-shadow:0 2px 6px rgba(0,0,0,0.05);
+text-decoration:none;
+color:#333;
+cursor:pointer;
+}
+
+/* =====================
+フィルタエリア
+===================== */
+
+#filterArea{
+background:white;
+padding:12px;
+border-radius:10px;
+box-shadow:0 3px 8px rgba(0,0,0,0.05);
+margin-bottom:10px;
+}
+
+#filterArea form{
+display:flex;
+flex-direction:column;
+gap:8px;
+}
+
+#filterArea select{
+padding:8px;
+border-radius:6px;
+border:1px solid #ddd;
+}
+
+#filterArea button{
+padding:10px;
+border:none;
+border-radius:6px;
+background:#ff5e62;
+color:white;
+font-size:13px;
+}
+
+.hidden{
+display:none;
+}

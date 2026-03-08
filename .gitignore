@@ -61,3 +61,5 @@ uploads/
 # Local test files
 # =========================
 index.php
+
+functions.php
