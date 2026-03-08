@@ -112,69 +112,145 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>旅行プラン提案結果</title>
     <style>
+        /* ===== ヘッダー ===== */
+
+        .page-frame-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #fce8ec, #e8405c, #f47090, #e8405c);
+            z-index: 1000;
+        }
+
+        header {
+            background: #fff;
+            border-bottom: 1px solid #f0d0d8;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 4px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            box-shadow: 0 2px 12px rgba(232, 64, 92, 0.06);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .brand-kanji {
+            font-size: 22px;
+            font-weight: 900;
+            color: #e8405c;
+            letter-spacing: -1px;
+        }
+
+        .brand-roman {
+            font-size: 14px;
+            font-weight: 300;
+            color: #9a7885;
+            letter-spacing: 3px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 16px;
+        }
+
+        .header-nav a {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-decoration: none;
+            color: #9a7885;
+        }
+
+        .header-nav a:hover {
+            color: #e8405c;
+        }
+
+        /* ===== ページ全体 ===== */
+
         body {
             margin: 0;
-            padding: 16px;
-            background: #f7f7f7;
-            font-family: sans-serif;
+            padding-top: 90px;
+            background: #faf6f8;
+            font-family: 'Roboto', sans-serif;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
         }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        /* ===== エラー ===== */
 
         .error {
             border: 1px solid #cc0000;
             background: #fff;
-            padding: 12px;
+            padding: 16px;
+            border-radius: 8px;
         }
+
+        /* ===== プランレイアウト ===== */
 
         .plans-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
+            gap: 24px;
             align-items: start;
         }
 
+        /* ===== プランカード ===== */
+
         .plan-column {
-            border: 1px solid #cccccc;
+            border: none;
             background: #fff;
-            padding: 16px;
-            box-sizing: border-box;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
         }
 
-        .plan-column h2,
-        .plan-column h3,
-        .plan-column h4,
-        .plan-column p {
-            margin-left: 0;
-            margin-right: 0;
-        }
+        /* ===== 見出し ===== */
 
         .plan-column h4 {
-            margin: 20px 0 10px;
+            margin: 24px 0 10px;
             padding: 8px 12px;
-            background: #f0f0f0;
-            border-left: 4px solid #222;
-            box-sizing: border-box;
+            background: #f8f4f6;
+            border-left: 4px solid #e8405c;
+            border-radius: 4px;
         }
 
+        /* ===== スポットカード ===== */
+
         .spot-card {
-            border: 1px solid #dddddd;
-            padding: 12px;
+            border: 1px solid #eee;
+            padding: 14px;
             margin-top: 12px;
+            border-radius: 8px;
             background: #fafafa;
-            box-sizing: border-box;
         }
+
+        /* ===== 画像 ===== */
 
         .spot-image-wrap {
             width: 100%;
             height: 220px;
             margin-top: 12px;
             overflow: hidden;
-            background: #e9e9e9;
-            box-sizing: border-box;
+            border-radius: 8px;
         }
 
         .spot-image-wrap img {
@@ -184,14 +260,17 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
             object-fit: cover;
         }
 
+        /* ===== メタ情報 ===== */
+
         .spot-meta {
             margin-top: 8px;
-            padding-left: 4px;
         }
 
         .spot-meta div {
             margin-top: 4px;
         }
+
+        /* ===== クエスト番号 ===== */
 
         .quest-number {
             display: block;
@@ -199,32 +278,33 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
             margin-bottom: 8px;
         }
 
+        /* ===== 確定ボタン ===== */
+
         .confirm-box {
             margin-top: 20px;
             padding-top: 16px;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid #eee;
         }
 
         .confirm-button {
             display: inline-block;
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 16px;
             border: none;
-            background: #222;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #e8405c, #f47090);
             color: #fff;
-            font-size: 16px;
+            font-size: 15px;
+            font-weight: 700;
             cursor: pointer;
         }
 
         .confirm-button:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(232, 64, 92, 0.25);
         }
 
-        pre {
-            white-space: pre-wrap;
-            word-break: break-word;
-            overflow-x: auto;
-        }
+        /* ===== モバイル ===== */
 
         @media (max-width: 1024px) {
             .plans-grid {
@@ -235,6 +315,17 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
 </head>
 
 <body>
+    <div class="page-frame-top"></div>
+    <header>
+        <div class="header-brand">
+            <span class="brand-kanji">旅</span>
+            <span class="brand-roman">so sweet</span>
+        </div>
+
+        <nav class="header-nav">
+            <a href="./auth/logout.php">ログアウト</a>
+        </nav>
+    </header>
     <div class="container">
         <h1>旅行プラン提案結果</h1>
 

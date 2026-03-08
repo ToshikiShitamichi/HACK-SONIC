@@ -7,9 +7,242 @@
     <title>旅行プラン提案 入力フォーム</title>
 
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===== ヘッダー ===== */
+
+        .page-frame-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #fce8ec, #e8405c, #f47090, #e8405c);
+            z-index: 1000;
+        }
+
+        header {
+            background: #fff;
+            border-bottom: 1px solid #f0d0d8;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 4px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            box-shadow: 0 2px 12px rgba(232, 64, 92, 0.06);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .brand-kanji {
+            font-size: 22px;
+            font-weight: 900;
+            color: #e8405c;
+            letter-spacing: -1px;
+        }
+
+        .brand-roman {
+            font-size: 14px;
+            font-weight: 300;
+            color: #9a7885;
+            letter-spacing: 3px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 16px;
+        }
+
+        .header-nav a {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-decoration: none;
+            color: #9a7885;
+        }
+
+        .header-nav a:hover {
+            color: #e8405c;
+        }
+
+        body {
+            padding-top: 90px;
+        }
+
+        /* ===== 全体 ===== */
+
+        body {
+            padding-top: 90px;
+            font-family: 'Roboto', sans-serif;
+            background: #faf6f8;
+            color: #444;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 40px 0 30px;
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        /* ===== フォームカード ===== */
+
+        #travelForm {
+            max-width: 720px;
+            margin: auto;
+            background: #fff;
+            padding: 40px 48px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        /* ===== フォーム要素 ===== */
+
+        #travelForm>div {
+            margin-bottom: 26px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        /* ===== input / select ===== */
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 14px;
+
+            border-radius: 8px;
+            border: 1px solid #e6d5db;
+
+            background: #fff;
+
+            transition: all 0.2s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #e8405c;
+            box-shadow: 0 0 0 3px rgba(232, 64, 92, 0.1);
+        }
+
+        /* ===== ボタン ===== */
+
+        button {
+            cursor: pointer;
+        }
+
+        /* デモボタン */
+
+        #demoDataButton {
+            display: block;
+            margin: 0 auto 30px;
+            background: #fff;
+            border: 1px solid #e8405c;
+            color: #e8405c;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        #demoDataButton:hover {
+            background: #e8405c;
+            color: #fff;
+        }
+
+        /* 現在地取得 */
+
+        #getCurrentLocationButton {
+            margin-top: 8px;
+            background: #f5f0f2;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        #getCurrentLocationButton:hover {
+            background: #e9dfe3;
+        }
+
+        /* ===== 送信ボタン ===== */
+
+        #submitButton {
+            width: 100%;
+            padding: 16px;
+
+            font-size: 16px;
+            font-weight: 700;
+
+            border: none;
+            border-radius: 10px;
+
+            background: linear-gradient(135deg, #e8405c, #f47090);
+            color: white;
+
+            transition: all 0.2s;
+        }
+
+        #submitButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(232, 64, 92, 0.25);
+        }
+
+        /* ===== スライダー ===== */
+
+        #budgetSlider {
+            margin: 18px 0;
+        }
+
+        .ui-slider-range {
+            background: #e8405c;
+        }
+
+        .ui-slider-handle {
+            border-radius: 50%;
+            border: none;
+            background: #e8405c;
+        }
+
+        /* ===== 予算表示 ===== */
+
+        #budgetMinText,
+        #budgetMaxText {
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
+    <div class="page-frame-top"></div>
+    <header>
+        <div class="header-brand">
+            <span class="brand-kanji">旅</span>
+            <span class="brand-roman">so sweet</span>
+        </div>
+
+        <nav class="header-nav">
+            <a href="./auth/logout.php">ログアウト</a>
+        </nav>
+    </header>
     <h1>旅行プラン提案入力フォーム</h1>
     <button id="demoDataButton">デモデータを入力</button>
 

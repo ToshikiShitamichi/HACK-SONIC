@@ -87,6 +87,78 @@ if (!is_array($plan) || !is_array($input)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>確定した旅行プラン</title>
     <style>
+        /* ===== ヘッダー（共通デザイン） ===== */
+
+        .page-frame-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #fce8ec, #e8405c, #f47090, #e8405c);
+            z-index: 1000;
+        }
+
+        header {
+            background: #fff;
+            border-bottom: 1px solid #f0d0d8;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            position: fixed;
+            top: 4px;
+            left: 0;
+            right: 0;
+
+            z-index: 999;
+            box-shadow: 0 2px 12px rgba(232, 64, 92, 0.06);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .brand-kanji {
+            font-size: 22px;
+            font-weight: 900;
+            color: #e8405c;
+            letter-spacing: -1px;
+        }
+
+        .brand-roman {
+            font-size: 14px;
+            font-weight: 300;
+            color: #9a7885;
+            letter-spacing: 3px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 16px;
+        }
+
+        .header-nav a {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-decoration: none;
+            color: #9a7885;
+        }
+
+        .header-nav a:hover {
+            color: #e8405c;
+        }
+
+        /* ヘッダー固定分の余白 */
+
+        body {
+            padding-top: 90px;
+        }
+
         body {
             margin: 0;
             padding: 16px;
@@ -156,6 +228,17 @@ if (!is_array($plan) || !is_array($input)) {
 </head>
 
 <body>
+    <div class="page-frame-top"></div>
+    <header>
+        <div class="header-brand">
+            <span class="brand-kanji">旅</span>
+            <span class="brand-roman">so sweet</span>
+        </div>
+
+        <nav class="header-nav">
+            <a href="./auth/logout.php">ログアウト</a>
+        </nav>
+    </header>
     <div class="container">
         <h1>確定した旅行プラン</h1>
 
