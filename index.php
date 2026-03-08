@@ -120,8 +120,8 @@ foreach ($result as $record) {
 <header>
     <h1>"旅" so sweet</h1>
     <div class="headerLinks">
-        <a href="./views/register.php">ユーザー登録</a>
-        <a href="./views/login.php">ログイン</a>
+        <a href="./auth/register.php">ユーザー登録</a>
+        <a href="./auth/login.php">ログイン</a>
     </div>
 </header>
 <main>
@@ -135,8 +135,8 @@ foreach ($result as $record) {
     </div>
 
     <div id="linkArea">
-        <a href="">旅プラン</a>
-        <a href="">旅クエスト</a>
+        <a href="./input-plan.html">旅プラン</a>
+        <a href="./quests/my_quests.php">旅クエスト</a>
     </div>
 
     <div id="timeLine">
@@ -178,7 +178,6 @@ foreach ($result as $record) {
         </div>
 
         <?= $output ?>
-        <a href="./views/post.php" id="postBtn">+</a>
     </div>
 </main>
 
