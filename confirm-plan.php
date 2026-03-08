@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+session_start();
+
+require_once __DIR__ . '/config/db.php';
+
 function h($value): string
 {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
@@ -29,6 +33,25 @@ function difficultyLabel(string $difficulty): string
     }
 }
 
+function normalizeDifficulty(?string $difficulty): string
+{
+    $difficulty = strtolower(trim((string)$difficulty));
+
+    if (in_array($difficulty, ['easy', 'normal', 'hard'], true)) {
+        return $difficulty;
+    }
+
+    return 'normal';
+}
+
+function normalizeXp($xp): int
+{
+    if ($xp === null || $xp === '' || !is_numeric((string)$xp)) {
+        return 0;
+    }
+    return (int)$xp;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
 ?>
@@ -52,9 +75,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $selectedPlanEncoded = (string)($_POST['selectedPlan'] ?? '');
-$inputDataEncoded = (string)($_POST['inputData'] ?? '');
+$inputDataEncoded    = (string)($_POST['inputData'] ?? '');
 
-$plan = json_decode(base64_decode($selectedPlanEncoded), true);
+$plan  = json_decode(base64_decode($selectedPlanEncoded), true);
 $input = json_decode(base64_decode($inputDataEncoded), true);
 
 if (!is_array($plan) || !is_array($input)) {
@@ -77,6 +100,119 @@ if (!is_array($plan) || !is_array($input)) {
     </html>
 <?php
     exit;
+}
+
+$userId = $_SESSION['user_id'] ?? null;
+$saveMessage = '';
+$saveError = '';
+
+// 二重登録防止用
+$planHash = hash('sha256', $selectedPlanEncoded);
+
+try {
+    $pdo = get_db();
+    $pdo->beginTransaction();
+
+    // 同じ確定POSTの二重保存を防ぐため、セッションに保存
+    if (!isset($_SESSION['saved_plan_hashes'])) {
+        $_SESSION['saved_plan_hashes'] = [];
+    }
+
+    if (!in_array($planHash, $_SESSION['saved_plan_hashes'], true)) {
+        $savedQuestIds = [];
+
+        if (!empty($plan['quests']) && is_array($plan['quests'])) {
+            $insertQuestSql = "
+                INSERT INTO quests (
+                    title,
+                    description,
+                    xp,
+                    difficulty,
+                    location,
+                    image_url,
+                    created_at,
+                    updated_at
+                ) VALUES (
+                    :title,
+                    :description,
+                    :xp,
+                    :difficulty,
+                    :location,
+                    :image_url,
+                    NOW(),
+                    NOW()
+                )
+            ";
+            $stmtQuest = $pdo->prepare($insertQuestSql);
+
+            foreach ($plan['quests'] as $quest) {
+                if (!is_array($quest)) {
+                    continue;
+                }
+
+                $title = trim((string)($quest['title'] ?? ''));
+                if ($title === '') {
+                    $title = 'クエスト';
+                }
+
+                $description = trim((string)($quest['description'] ?? ''));
+                $xp          = normalizeXp($quest['exp'] ?? 0);
+                $difficulty  = normalizeDifficulty($quest['difficulty'] ?? 'normal');
+
+                // place を優先、なければ area を保存
+                $location = trim((string)($quest['place'] ?? ''));
+                if ($location === '') {
+                    $location = trim((string)($quest['area'] ?? ''));
+                }
+
+                $imageUrl = trim((string)($quest['image'] ?? ''));
+
+                $stmtQuest->execute([
+                    ':title'       => $title,
+                    ':description' => $description !== '' ? $description : null,
+                    ':xp'          => $xp,
+                    ':difficulty'  => $difficulty,
+                    ':location'    => $location !== '' ? $location : null,
+                    ':image_url'   => $imageUrl !== '' ? $imageUrl : null,
+                ]);
+
+                $savedQuestIds[] = (int)$pdo->lastInsertId();
+            }
+        }
+
+        // user_quests に紐づけ保存（ログイン時のみ）
+        if ($userId !== null && !empty($savedQuestIds)) {
+            $insertUserQuestSql = "
+                INSERT INTO user_quests (
+                    user_id,
+                    quest_id
+                ) VALUES (
+                    :user_id,
+                    :quest_id
+                )
+            ";
+            $stmtUserQuest = $pdo->prepare($insertUserQuestSql);
+
+            foreach ($savedQuestIds as $questId) {
+                $stmtUserQuest->execute([
+                    ':user_id'  => (int)$userId,
+                    ':quest_id' => $questId,
+                ]);
+            }
+        }
+
+        $_SESSION['saved_plan_hashes'][] = $planHash;
+        $saveMessage = 'クエスト情報を保存しました。';
+    } else {
+        $saveMessage = 'このプランのクエスト情報はすでに保存済みです。';
+    }
+
+    $pdo->commit();
+} catch (Throwable $e) {
+    if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    $saveError = 'クエスト情報の保存に失敗しました: ' . $e->getMessage();
 }
 ?>
 <!DOCTYPE html>
@@ -114,8 +250,10 @@ if (!is_array($plan) || !is_array($input)) {
         }
 
         .spot-card img {
-            max-width: 100%;
-            height: auto;
+            width: 100%;
+            max-width: 320px;
+            height: 200px;
+            object-fit: cover;
             margin-top: 8px;
             display: block;
         }
@@ -144,6 +282,7 @@ if (!is_array($plan) || !is_array($input)) {
             background: #222;
             color: #fff;
             text-decoration: none;
+            margin-right: 8px;
         }
 
         .sub-box {
@@ -152,6 +291,24 @@ if (!is_array($plan) || !is_array($input)) {
             border: 1px solid #ddd;
             padding: 16px;
         }
+
+        .message-box {
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 6px;
+        }
+
+        .message-success {
+            background: #ecfdf3;
+            border: 1px solid #86efac;
+            color: #166534;
+        }
+
+        .message-error {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
     </style>
 </head>
 
@@ -159,35 +316,13 @@ if (!is_array($plan) || !is_array($input)) {
     <div class="container">
         <h1>確定した旅行プラン</h1>
 
-        <!-- <div class="sub-box">
-            <h2>入力内容</h2>
-            <dl>
-                <dt>出発地</dt>
-                <dd><?= h(($input['departurePrefecture'] ?? '') . ' ' . ($input['departureCity'] ?? '')) ?></dd>
+        <?php if ($saveMessage !== ''): ?>
+            <div class="message-box message-success"><?= h($saveMessage) ?></div>
+        <?php endif; ?>
 
-                <dt>旅行先</dt>
-                <dd><?= h(($input['destinationPrefecture'] ?? '') . ' ' . ($input['destinationCity'] ?? '')) ?></dd>
-
-                <dt>旅行先キーワード</dt>
-                <dd><?= h($input['destinationKeyword'] ?? '') ?: '未入力' ?></dd>
-
-                <dt>出発日</dt>
-                <dd><?= h($input['departureDate'] ?? '') ?></dd>
-
-                <dt>期間</dt>
-                <dd><?= h($input['duration'] ?? '') ?></dd>
-
-                <dt>人数</dt>
-                <dd><?= h($input['people'] ?? '') ?></dd>
-
-                <dt>予算</dt>
-                <dd>
-                    <?= h(formatYen($input['budgetMin'] ?? '')) ?>
-                    〜
-                    <?= h(formatYen($input['budgetMax'] ?? '')) ?>
-                </dd>
-            </dl>
-        </div> -->
+        <?php if ($saveError !== ''): ?>
+            <div class="message-box message-error"><?= h($saveError) ?></div>
+        <?php endif; ?>
 
         <section class="card">
             <h2><?= h($plan['plan_title'] ?? 'タイトル未設定') ?></h2>
@@ -313,6 +448,7 @@ if (!is_array($plan) || !is_array($input)) {
 
         <div class="button-row">
             <a href="./input-plan.html" class="back-button">入力フォームに戻る</a>
+            <a href="./R/views/post.php" class="back-button">SNSに投稿</a>
         </div>
     </div>
 </body>
