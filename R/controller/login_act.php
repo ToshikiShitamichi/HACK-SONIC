@@ -1,6 +1,6 @@
 <?php
 // データ受け取り
-include('../config/db.php'); 
+include('../../config/db.php'); 
 session_start();
 
 // SQL実行
