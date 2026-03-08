@@ -112,7 +112,7 @@
   <form action="../controller/post_act.php" method="POST" enctype="multipart/form-data">
 
     <div class="tags">
-        <select id="region" name="region">
+        <select id="region" name="region" required>
             <option value="">🗾 地方</option>
             <option value="hokkaido">北海道</option>
             <option value="tohoku">東北</option>
@@ -124,11 +124,11 @@
             <option value="kyushu">九州</option>
         </select>
 
-        <select name="prefecture" id="prefecture">
+        <select name="prefecture" id="prefecture" required>
             <option value="">🔍 都道府県</option>
         </select>
 
-        <select name="category">
+        <select name="category" required>
             <option value="">🏷️ カテゴリー</option>
             <option value="観光">観光</option>
             <option value="グルメ">グルメ</option>
@@ -137,7 +137,7 @@
         </select>
 
     </div>
-      <textarea name="text" id="text" placeholder="どんな旅だった？"></textarea>
+      <textarea name="text" id="text" placeholder="どんな旅だった？" required></textarea>
       <input type="file" name="image" accept="image/*">
 
       <div id="btn">

@@ -1,13 +1,12 @@
 <?php
 require_once __DIR__ . '/auth/auth_check.php';
-// include('./config/db.php');
-// session_start();
+
 $user_id = $_SESSION['user_id'] ?? null;
 $pdo = get_db();
 
 // フィルター
 $filter = $_GET['filter'] ?? '';
-$prefecture = $_GET['destination'] ?? '';
+$prefecture = $_GET['destination'] ?? ''; // フォームのnameが destination なのでこれで受ける
 $category   = $_GET['category'] ?? '';
 
 // SQL文
@@ -19,28 +18,53 @@ SELECT
     p.image_url,
     p.created_at,
     p.plan_id,
+    p.prefecture,
+    p.city,
+    p.destination,
+    p.category,
     u.name AS username,
     COUNT(l.id) AS like_count,
-    SUM(l.user_id = :user_id) AS liked
+    COALESCE(SUM(CASE WHEN l.user_id = :user_id THEN 1 ELSE 0 END), 0) AS liked
 FROM post_table p
-JOIN user_table u ON p.user_id = u.id
+JOIN users u ON p.user_id = u.id
 LEFT JOIN like_table l ON p.id = l.post_id
 WHERE 1
 ";
 
+if ($prefecture !== '') {
+    $sql .= " AND p.prefecture = :prefecture ";
+}
 
-$sql .= " GROUP BY p.id ";
+if ($category !== '') {
+    $sql .= " AND p.category = :category ";
+}
+
+$sql .= "
+GROUP BY 
+    p.id,
+    p.user_id,
+    p.message,
+    p.image_url,
+    p.created_at,
+    p.plan_id,
+    p.prefecture,
+    p.city,
+    p.destination,
+    p.category,
+    u.name
+";
 
 if ($filter === 'liked') {
-    $sql .= " HAVING SUM(l.user_id = :having_user_id) > 0 ";
+    $sql .= " HAVING COALESCE(SUM(CASE WHEN l.user_id = :having_user_id THEN 1 ELSE 0 END), 0) > 0 ";
 }
 
 $sql .= " ORDER BY p.created_at DESC ";
 
 $stmt = $pdo->prepare($sql);
-$stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+$stmt->bindValue(':user_id', (int)$user_id, PDO::PARAM_INT);
+
 if ($filter === 'liked') {
-    $stmt->bindValue(':having_user_id', $user_id, PDO::PARAM_INT);
+    $stmt->bindValue(':having_user_id', (int)$user_id, PDO::PARAM_INT);
 }
 if ($prefecture !== '') {
     $stmt->bindValue(':prefecture', $prefecture, PDO::PARAM_STR);
@@ -52,7 +76,9 @@ if ($category !== '') {
 try {
     $stmt->execute();
 } catch (PDOException $e) {
-    echo json_encode(["sql error" => $e->getMessage()]);
+    echo '<pre>';
+    print_r(["sql error" => $e->getMessage()]);
+    echo '</pre>';
     exit();
 }
 
@@ -61,37 +87,41 @@ $output = "";
 
 // 投稿カード作成
 foreach ($result as $record) {
-    
     $deleteBtn = '';
-    if ($record['user_id'] == $user_id) {
+    if ((int)$record['user_id'] === (int)$user_id) {
         $deleteBtn = "<a class='deleteBtn' href='./controller/delete.php?id={$record['id']}' onclick='return confirm(\"本当に削除しますか？\")'>削除</a>";
     }
 
-    $likedClass = $record['liked'] ? 'liked' : '';
+    $likedClass = !empty($record['liked']) ? 'liked' : '';
+
+    $imageHtml = '';
+    if (!empty($record['image_url'])) {
+        $imageHtml = '<img src="' . htmlspecialchars($record['image_url'], ENT_QUOTES, 'UTF-8') . '" alt="">';
+    }
 
     $output .= '
 <div class="postCard">
     <div class="postHeader">
         <span class="user">
             <i class="fa-solid fa-user"></i>
-            <span class="name">' . htmlspecialchars($record['username']) . '</span>
+            <span class="name">' . htmlspecialchars($record['username'], ENT_QUOTES, 'UTF-8') . '</span>
         </span>
-        <span class="time">投稿: ' . $record['created_at'] . '</span>
+        <span class="time">投稿: ' . htmlspecialchars($record['created_at'], ENT_QUOTES, 'UTF-8') . '</span>
         <a class="likeBtn ' . $likedClass . '" 
-           href="./R/controller/like_create.php?user_id=' . $user_id . '&post_id=' . $record['id'] . '">
-           ♥<span class="likeCount">' . $record['like_count'] . '</span>
+           href="./R/controller/like_create.php?user_id=' . (int)$user_id . '&post_id=' . (int)$record['id'] . '">
+           ♥<span class="likeCount">' . (int)$record['like_count'] . '</span>
         </a>
         ' . $deleteBtn . '
     </div>
     <div class="postBody">
         <div class="tags">
-            <span class="tag">📍' . $record['prefecture'] . '</span>
-            <span class="tag">🏙' . $record['city'] . '</span>
-            <span class="tag">📌' . $record['destination'] . '</span>
-            <span class="tag">🏷' . $record['category'] . '</span>
+            <span class="tag">📍' . htmlspecialchars($record['prefecture'] ?? '', ENT_QUOTES, 'UTF-8') . '</span>
+            <span class="tag">🏙' . htmlspecialchars($record['city'] ?? '', ENT_QUOTES, 'UTF-8') . '</span>
+            <span class="tag">📌' . htmlspecialchars($record['destination'] ?? '', ENT_QUOTES, 'UTF-8') . '</span>
+            <span class="tag">🏷' . htmlspecialchars($record['category'] ?? '', ENT_QUOTES, 'UTF-8') . '</span>
         </div>
-        <p>' . htmlspecialchars($record['message']) . '</p>
-        <img src="' . $record['image_url'] . '" alt="">
+        <p>' . nl2br(htmlspecialchars($record['message'], ENT_QUOTES, 'UTF-8')) . '</p>
+        ' . $imageHtml . '
     </div>
 </div>';
 }
@@ -111,36 +141,29 @@ foreach ($result as $record) {
 
 <body>
 
-<div class="page-frame-top"></div>
+    <div class="page-frame-top"></div>
 
-<header>
-    <div class="header-brand">
-        <span class="brand-kanji">旅</span>
-        <span class="brand-roman">so sweet</span>
-    </div>
-    <nav class="header-nav">
-        <a href="./quests/quest_list.php">旅クエスト</a>
-        <a href="./quests/my_quests.php">マイクエスト</a>
-        <a href="./auth/logout.php">ログアウト</a>
-    </nav>
-</header>
+    <header>
+        <div class="header-brand">
+            <span class="brand-kanji">旅</span>
+            <span class="brand-roman">so sweet</span>
+        </div>
+        <nav class="header-nav">
+            <a href="./quests/quest_list.php">旅クエスト</a>
+            <a href="./quests/my_quests.php">マイクエスト</a>
+            <a href="./auth/logout.php">ログアウト</a>
+        </nav>
+    </header>
 
-<main>
+    <main>
         <div id="quizArea">
             <?php include('./quiz/quiz-top-component.php'); ?>
-            <!-- <h2>クイズ</h2>
-            <div>
-                <p>日本一GEEKな場所はどこでしょう</p>
-                <input type="text" placeholder="回答を入力">
-            </div>
-            <button>回答</button> -->
         </div>
 
         <div id="linkArea">
             <a href="./input-plan.html">旅プラン生成</a>
             <a href="./quests/quest_list.php">旅クエスト</a>
             <a href="./R/views/post.php">投稿</a>
-
         </div>
 
         <div id="timeLine">
@@ -148,7 +171,6 @@ foreach ($result as $record) {
             <div class="filterBar">
                 <a href="index.php?filter=">全件表示</a>
                 <a href="index.php?filter=liked">❤️ いいね</a>
-                <!-- <button id="filterBtn">🔍 検索</button> -->
             </div>
 
             <div id="filterArea" class="hidden">
@@ -186,12 +208,9 @@ foreach ($result as $record) {
     </main>
 
     <script>
-        const btn = document.getElementById("filterBtn");
-        const area = document.getElementById("filterArea");
-        btn.onclick = () => area.classList.toggle("hidden");
-
         const region = document.getElementById("region");
         const pref = document.getElementById("prefecture");
+
         const prefectures = {
             hokkaido: ["北海道"],
             tohoku: ["青森", "岩手", "宮城", "秋田", "山形", "福島"],
@@ -207,11 +226,13 @@ foreach ($result as $record) {
             const list = prefectures[region.value];
             pref.innerHTML = "<option value=''>都道府県</option>";
             if (!list) return;
-            list.forEach(p => pref.innerHTML += `<option value="${p}">${p}</option>`);
+            list.forEach(p => {
+                pref.innerHTML += `<option value="${p}">${p}</option>`;
+            });
         };
     </script>
 
-<footer class="page-footer">Travel Quest · 旅 so sweet</footer>
+    <footer class="page-footer">Travel Quest · 旅 so sweet</footer>
 
 </body>
 
