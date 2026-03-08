@@ -1,7 +1,7 @@
     <?php
     include('../../config/db.php'); 
-    session_start();
-    check_session_id();
+    // session_start();
+    // check_session_id();
 
     if (
     !isset($_POST['text']) || $_POST['text'] === ''

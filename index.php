@@ -143,7 +143,7 @@ foreach ($result as $record) {
 
         <div id="linkArea">
             <a href="./input-plan.html">旅プラン</a>
-            <a href="./quests/my_quests.php">旅クエスト</a>
+            <a href="./quests/quest_list.php">旅クエスト</a>
         </div>
 
         <div id="timeLine">
