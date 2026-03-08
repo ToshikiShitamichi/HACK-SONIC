@@ -117,12 +117,16 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
             max-width: 1200px;
         }
 
+        /* ===== プランレイアウト ===== */
+
         .plans-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
             align-items: start;
         }
+
+        /* ===== プランカード ===== */
 
         .plan-column {
             background: var(--white);
@@ -175,6 +179,8 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
             border-radius: 0 10px 10px 0;
         }
 
+        /* ===== スポットカード ===== */
+
         .spot-card {
             border: 1.5px solid var(--border);
             padding: 16px;
@@ -188,6 +194,8 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
             font-weight: 700;
             color: var(--text);
         }
+
+        /* ===== 画像 ===== */
 
         .spot-image-wrap {
             width: 100%;
@@ -205,6 +213,8 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
             object-fit: cover;
         }
 
+        /* ===== メタ情報 ===== */
+
         .spot-meta {
             margin-top: 10px;
             font-size: 13px;
@@ -221,6 +231,8 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
             font-weight: 600;
         }
 
+        /* ===== クエスト番号 ===== */
+
         .quest-number {
             display: inline-block;
             font-size: 10px;
@@ -232,6 +244,8 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
             border-radius: 50px;
             margin-bottom: 10px;
         }
+
+        /* ===== 確定ボタン ===== */
 
         .confirm-box {
             margin-top: 24px;

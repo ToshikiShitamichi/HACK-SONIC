@@ -6,10 +6,76 @@
     <title>クイズ</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <!-- Google Fonts -->
+
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
+        /* ===== ヘッダー ===== */
+
+        .page-frame-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #fce8ec, #e8405c, #f47090, #e8405c);
+            z-index: 1000;
+        }
+
+        header {
+            background: #fff;
+            border-bottom: 1px solid #f0d0d8;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 4px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            box-shadow: 0 2px 12px rgba(232, 64, 92, 0.06);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .brand-kanji {
+            font-size: 22px;
+            font-weight: 900;
+            color: #e8405c;
+            letter-spacing: -1px;
+        }
+
+        .brand-roman {
+            font-size: 14px;
+            font-weight: 300;
+            color: #9a7885;
+            letter-spacing: 3px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 16px;
+        }
+
+        .header-nav a {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-decoration: none;
+            color: #9a7885;
+        }
+
+        .header-nav a:hover {
+            color: #e8405c;
+        }
+
+        /* ===== 既存デザイン ===== */
+
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #f9f9f9;
@@ -23,6 +89,7 @@
             max-width: 700px;
             width: 100%;
             padding: 20px;
+            margin-top: 120px;
         }
 
         #status {
@@ -51,7 +118,7 @@
             margin: 10px 0;
             font-size: 1rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all .2s ease;
             text-align: left;
         }
 
@@ -103,9 +170,8 @@
             border: none;
             border-radius: 8px;
             padding: 10px 16px;
-            font-size: 0.95rem;
+            font-size: .95rem;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
 
         #action-buttons button:hover,
@@ -119,11 +185,6 @@
             margin-top: 20px;
             font-weight: 500;
             color: #007bff;
-            transition: all 0.2s ease;
-        }
-
-        .toggle-header:hover {
-            text-decoration: underline;
         }
 
         .toggle-content {
@@ -132,19 +193,6 @@
             margin-bottom: 15px;
             padding-left: 10px;
             border-left: 2px solid #ddd;
-        }
-
-        .result-item,
-        .favorite-item {
-            margin: 5px 0;
-            font-size: 0.95rem;
-        }
-
-        .button-group {
-            margin-top: 15px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
         }
 
         .result-item {
@@ -173,7 +221,7 @@
             font-weight: bold;
             padding: 3px 8px;
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: .8rem;
         }
 
         .badge-correct {
@@ -215,7 +263,7 @@
 
         .tag-image div {
             text-align: center;
-            font-size: 0.9rem;
+            font-size: .9rem;
             margin-top: 4px;
         }
     </style>
@@ -491,13 +539,34 @@
 </head>
 
 <body>
+
+    <div class="page-frame-top"></div>
+
+    <header>
+        <div class="header-brand">
+            <span class="brand-kanji">旅</span>
+            <span class="brand-roman">so sweet</span>
+        </div>
+
+        <nav class="header-nav">
+            <a href="../index.php">旅のホームへ</a>
+            <a href="../quests/quest_list.php">クエスト一覧</a>
+            <a href="../auth/logout.php">ログアウト</a>
+        </nav>
+    </header>
+
     <div class="container">
+
         <h3 id="status"></h3>
+
         <h2 id="question"></h2>
+
         <div id="choices"></div>
+
         <h3 id="result"></h3>
 
         <div id="explanation"></div>
+
         <div id="tag-images" style="margin-top:15px;display:none;"></div>
 
         <div id="action-buttons">
@@ -505,16 +574,27 @@
             <button onclick="saveFavorite()">保存する</button>
             <button onclick="nextQuestion()">次の問題へ</button>
         </div>
+
     </div>
+
+    <!-- モーダル -->
+
     <div id="modal-overlay"
         style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:999;">
+
         <div id="modal-box"
             style="background:#fff;padding:20px;border-radius:10px;max-width:400px;margin:20% auto;text-align:center;position:relative;">
+
             <span id="modal-message" style="display:block;margin-bottom:15px;font-size:1rem;"></span>
+
             <button onclick="closeModal()"
-                style="padding:8px 16px;border:none;border-radius:6px;background:#007bff;color:#fff;cursor:pointer;">閉じる</button>
+                style="padding:8px 16px;border:none;border-radius:6px;background:#007bff;color:#fff;cursor:pointer;">
+                閉じる
+            </button>
+
         </div>
     </div>
+
 </body>
 
 </html>
