@@ -261,6 +261,28 @@ $(function () {
         $("#duration").val("2泊3日");
         $("#people").val("1");
         $("#budgetMin").val("0");
-        $("#budgetMax").val("50000");
+        $("#budgetMax").val("150000");
+    });
+
+    function showLoadingOverlay() {
+        $("#loadingOverlay").prop("hidden", false).css("display", "block");
+        $("#submitButton").prop("disabled", true).text("生成中...");
+    }
+
+    function hideLoadingOverlay() {
+        $("#loadingOverlay").prop("hidden", true).css("display", "none");
+        $("#submitButton").prop("disabled", false).text("プラン候補を見る");
+    }
+
+    $("#travelForm").on("submit", function () {
+        if (!this.checkValidity()) {
+            return;
+        }
+
+        showLoadingOverlay();
+    });
+
+    window.addEventListener("pageshow", function () {
+        hideLoadingOverlay();
     });
 });

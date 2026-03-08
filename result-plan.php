@@ -15,6 +15,20 @@ function formatYen($value): string
     return number_format((int)$value) . '円';
 }
 
+function difficultyLabel(string $difficulty): string
+{
+    switch ($difficulty) {
+        case 'easy':
+            return 'やさしい';
+        case 'normal':
+            return 'ふつう';
+        case 'hard':
+            return 'むずかしい';
+        default:
+            return $difficulty;
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
 ?>
@@ -84,6 +98,11 @@ if ($responseBody === false) {
         $pageError = $apiResponse['error'] ?? 'プラン生成に失敗しました。';
     }
 }
+
+$plans = [];
+if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array($apiResponse['data']['plans'])) {
+    $plans = $apiResponse['data']['plans'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -94,101 +113,96 @@ if ($responseBody === false) {
     <title>旅行プラン提案結果</title>
     <style>
         body {
-            font-family: sans-serif;
-            line-height: 1.7;
             margin: 0;
-            padding: 24px;
-            background: #f7f7fb;
-            color: #222;
+            padding: 16px;
+            background: #f7f7f7;
+            font-family: sans-serif;
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
-        .box {
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
-        }
-
         .error {
-            border-left: 6px solid #d33;
-            background: #fff4f4;
+            border: 1px solid #cc0000;
+            background: #fff;
+            padding: 12px;
         }
 
-        .input-summary dl {
+        .plans-grid {
             display: grid;
-            grid-template-columns: 220px 1fr;
-            gap: 8px 12px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            align-items: start;
         }
 
-        .input-summary dt {
-            font-weight: bold;
+        .plan-column {
+            border: 1px solid #cccccc;
+            background: #fff;
+            padding: 16px;
+            box-sizing: border-box;
         }
 
-        .plan-card {
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 18px;
-            margin-top: 18px;
+        .spot-card {
+            border: 1px solid #dddddd;
+            padding: 12px;
+            margin-top: 12px;
+            background: #fafafa;
         }
 
-        .goal {
-            background: #f1f8ff;
-            border-radius: 10px;
-            padding: 14px;
-            margin: 14px 0;
+        .spot-card img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 8px;
+            display: block;
         }
 
-        .quest {
-            border: 1px solid #e5e5e5;
-            border-radius: 10px;
-            padding: 14px;
-            margin: 12px 0;
-            background: #fcfcfc;
+        .spot-meta {
+            margin-top: 8px;
         }
 
-        .badge {
+        .spot-meta div {
+            margin-top: 4px;
+        }
+
+        .quest-number {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            margin-right: 8px;
-            background: #eee;
+            font-weight: bold;
+            margin-bottom: 8px;
         }
 
-        .easy {
-            background: #e8f7e8;
+        .confirm-box {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #ddd;
         }
 
-        .normal {
-            background: #fff2cc;
+        .confirm-button {
+            display: inline-block;
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            background: #222;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
         }
 
-        .hard {
-            background: #ffd9d9;
-        }
-
-        ul {
-            padding-left: 1.2em;
+        .confirm-button:hover {
+            opacity: 0.9;
         }
 
         pre {
             white-space: pre-wrap;
             word-break: break-word;
-            background: #111;
-            color: #f5f5f5;
-            padding: 14px;
-            border-radius: 8px;
             overflow-x: auto;
         }
 
-        a {
-            color: #0b57d0;
+        @media (max-width: 1024px) {
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -197,7 +211,7 @@ if ($responseBody === false) {
     <div class="container">
         <h1>旅行プラン提案結果</h1>
 
-        <div class="box input-summary">
+        <section>
             <h2>入力内容</h2>
             <dl>
                 <dt>出発地（都道府県）</dt>
@@ -231,12 +245,12 @@ if ($responseBody === false) {
                 <dd><?= h(formatYen($input['budgetMax'])) ?></dd>
 
                 <dt>気になるカテゴリ</dt>
-                <dd><?= h($apiResponse['user_context']['interest_category'] ?? 'グルメ') ?></dd>
+                <dd><?= h($apiResponse['user_context']['interest_category'] ?? 'すべて') ?></dd>
             </dl>
-        </div>
+        </section>
 
         <?php if ($pageError !== null): ?>
-            <div class="box error">
+            <section class="error">
                 <h2>エラー</h2>
                 <p><?= h($pageError) ?></p>
 
@@ -249,120 +263,151 @@ if ($responseBody === false) {
                 <?php endif; ?>
 
                 <p><a href="./input-plan.html">入力フォームに戻る</a></p>
-            </div>
+            </section>
         <?php else: ?>
-            <div class="box">
+            <section>
                 <h2>AIが生成した旅行プラン候補</h2>
 
-                <?php
-                $plans = $apiResponse['data']['plans'] ?? [];
-                foreach ($plans as $index => $plan):
-                ?>
-                    <section class="plan-card">
-                        <h3>候補<?= h((string)($index + 1)) ?>：<?= h($plan['plan_title'] ?? '無題プラン') ?></h3>
+                <?php if (!empty($plans)): ?>
+                    <div class="plans-grid">
+                        <?php foreach ($plans as $index => $plan): ?>
+                            <section class="plan-column">
+                                <h2>プラン<?= $index + 1 ?></h2>
 
-                        <p><strong>コンセプト：</strong><?= h($plan['concept'] ?? '') ?></p>
-                        <p><strong>概要：</strong><?= h($plan['summary'] ?? '') ?></p>
+                                <h3><?= h($plan['plan_title'] ?? 'タイトル未設定') ?></h3>
 
-                        <p>
-                            <strong>予算目安：</strong>
-                            <?= h(formatYen($plan['budget_estimate']['min'] ?? '')) ?>
-                            〜
-                            <?= h(formatYen($plan['budget_estimate']['max'] ?? '')) ?>
-                        </p>
-
-                        <div class="goal">
-                            <h4>
-                                ゴール：
-                                <?php if (!empty($plan['goal']['google_maps_url'])): ?>
-                                    <a href="<?= h($plan['goal']['google_maps_url']) ?>" target="_blank" rel="noopener noreferrer">
-                                        <?= h($plan['goal']['name'] ?? '') ?>
-                                    </a>
-                                <?php elseif (!empty($plan['goal']['official_url'])): ?>
-                                    <a href="<?= h($plan['goal']['official_url']) ?>" target="_blank" rel="noopener noreferrer">
-                                        <?= h($plan['goal']['name'] ?? '') ?>
-                                    </a>
-                                <?php else: ?>
-                                    <?= h($plan['goal']['name'] ?? '') ?>
+                                <?php if (!empty($plan['concept'])): ?>
+                                    <p><strong>コンセプト:</strong> <?= nl2br(h($plan['concept'])) ?></p>
                                 <?php endif; ?>
-                            </h4>
-                            <p><strong>場所：</strong><?= h($plan['goal']['area'] ?? '') ?></p>
-                            <p><?= h($plan['goal']['description'] ?? '') ?></p>
-                            <p><strong>画像：</strong></p>
-                            <?php if (!empty($plan['goal']['image'])): ?>
-                                <p>
-                                    <img
-                                        src="<?= h($plan['goal']['image']) ?>"
-                                        alt="<?= h($plan['goal']['name'] ?? 'goal image') ?>"
-                                        style="max-width:320px; height:auto; border-radius:8px;">
-                                </p>
-                            <?php else: ?>
-                                <p>画像なし</p>
-                            <?php endif; ?>
-                        </div>
 
-                        <h4>クエスト一覧</h4>
-                        <?php if (!empty($plan['quests']) && is_array($plan['quests'])): ?>
-                            <?php foreach ($plan['quests'] as $quest): ?>
-                                <?php
-                                $difficulty = (string)($quest['difficulty'] ?? '');
-                                $difficultyClass = in_array($difficulty, ['easy', 'normal', 'hard'], true) ? $difficulty : '';
-                                ?>
-                                <div class="quest">
-                                    <h5>
-                                        <?php if (!empty($quest['google_maps_url'])): ?>
-                                            <a href="<?= h($quest['google_maps_url']) ?>" target="_blank" rel="noopener noreferrer">
-                                                <?= h($quest['title'] ?? '無題クエスト') ?>
-                                            </a>
-                                        <?php elseif (!empty($quest['official_url'])): ?>
-                                            <a href="<?= h($quest['official_url']) ?>" target="_blank" rel="noopener noreferrer">
-                                                <?= h($quest['title'] ?? '無題クエスト') ?>
-                                            </a>
-                                        <?php else: ?>
-                                            <?= h($quest['title'] ?? '無題クエスト') ?>
-                                        <?php endif; ?>
-                                    </h5>
-                                    <p><?= h($quest['description'] ?? '') ?></p>
+                                <?php if (!empty($plan['summary'])): ?>
+                                    <p><strong>概要:</strong> <?= nl2br(h($plan['summary'])) ?></p>
+                                <?php endif; ?>
+
+                                <?php if (!empty($plan['budget_estimate'])): ?>
                                     <p>
-                                        <span class="badge <?= h($difficultyClass) ?>">難易度: <?= h($difficulty ?: '-') ?></span>
-                                        <span class="badge">獲得経験値: <?= h((string)($quest['exp'] ?? '-')) ?></span>
+                                        <strong>予算目安:</strong>
+                                        <?= h(formatYen($plan['budget_estimate']['min'] ?? '')) ?>
+                                        〜
+                                        <?= h(formatYen($plan['budget_estimate']['max'] ?? '')) ?>
                                     </p>
-                                    <p><strong>場所：</strong><?= h($quest['place'] ?? '') ?></p>
-                                    <p><strong>画像：</strong></p>
-                                    <?php if (!empty($quest['image'])): ?>
-                                        <p>
-                                            <img
-                                                src="<?= h($quest['image']) ?>"
-                                                alt="<?= h($quest['place'] ?? 'quest image') ?>"
-                                                style="max-width:280px; height:auto; border-radius:8px;">
-                                        </p>
-                                    <?php else: ?>
-                                        <p>画像なし</p>
-                                    <?php endif; ?>
+                                <?php endif; ?>
+
+                                <?php if (!empty($plan['goal']) && is_array($plan['goal'])): ?>
+                                    <div class="spot-card">
+                                        <h4>ゴール地点</h4>
+                                        <div><strong><?= h($plan['goal']['name'] ?? '') ?></strong></div>
+
+                                        <?php if (!empty($plan['goal']['description'])): ?>
+                                            <div class="spot-meta"><?= nl2br(h($plan['goal']['description'])) ?></div>
+                                        <?php endif; ?>
+
+                                        <div class="spot-meta">
+                                            <?php if (!empty($plan['goal']['area'])): ?>
+                                                <div><strong>住所・エリア:</strong> <?= h($plan['goal']['area']) ?></div>
+                                            <?php endif; ?>
+
+                                            <?php if (!empty($plan['goal']['google_maps_url'])): ?>
+                                                <div>
+                                                    <a href="<?= h($plan['goal']['google_maps_url']) ?>" target="_blank" rel="noopener noreferrer">Googleマップで見る</a>
+                                                </div>
+                                            <?php endif; ?>
+
+                                            <?php if (!empty($plan['goal']['official_url'])): ?>
+                                                <div>
+                                                    <a href="<?= h($plan['goal']['official_url']) ?>" target="_blank" rel="noopener noreferrer">公式サイトを見る</a>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <?php if (!empty($plan['goal']['image'])): ?>
+                                            <img src="<?= h($plan['goal']['image']) ?>" alt="<?= h($plan['goal']['name'] ?? 'ゴール地点') ?>">
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($plan['quests']) && is_array($plan['quests'])): ?>
+                                    <h4>クエスト</h4>
+
+                                    <?php foreach ($plan['quests'] as $qIndex => $quest): ?>
+                                        <div class="spot-card">
+                                            <div class="quest-number">クエスト<?= $qIndex + 1 ?></div>
+                                            <div><strong><?= h($quest['title'] ?? 'クエスト') ?></strong></div>
+
+                                            <?php if (!empty($quest['place'])): ?>
+                                                <div><strong>場所:</strong> <?= h($quest['place']) ?></div>
+                                            <?php endif; ?>
+
+                                            <?php if (!empty($quest['description'])): ?>
+                                                <div class="spot-meta"><?= nl2br(h($quest['description'])) ?></div>
+                                            <?php endif; ?>
+
+                                            <div class="spot-meta">
+                                                <?php if (!empty($quest['area'])): ?>
+                                                    <div><strong>住所・エリア:</strong> <?= h($quest['area']) ?></div>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($quest['stay_minutes'])): ?>
+                                                    <div><strong>滞在目安:</strong> <?= h((string)$quest['stay_minutes']) ?>分</div>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($quest['estimated_cost'])): ?>
+                                                    <div><strong>費用目安:</strong> <?= h($quest['estimated_cost']) ?></div>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($quest['difficulty'])): ?>
+                                                    <div><strong>難易度:</strong> <?= h(difficultyLabel((string)$quest['difficulty'])) ?></div>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($quest['exp'])): ?>
+                                                    <div><strong>EXP:</strong> <?= h((string)$quest['exp']) ?></div>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($quest['google_maps_url'])): ?>
+                                                    <div>
+                                                        <a href="<?= h($quest['google_maps_url']) ?>" target="_blank" rel="noopener noreferrer">Googleマップで見る</a>
+                                                    </div>
+                                                <?php endif; ?>
+
+                                                <?php if (!empty($quest['official_url'])): ?>
+                                                    <div>
+                                                        <a href="<?= h($quest['official_url']) ?>" target="_blank" rel="noopener noreferrer">公式サイトを見る</a>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+
+                                            <?php if (!empty($quest['image'])): ?>
+                                                <img src="<?= h($quest['image']) ?>" alt="<?= h($quest['place'] ?? $quest['title'] ?? 'クエスト') ?>">
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+
+                                <?php if (!empty($plan['notes']) && is_array($plan['notes'])): ?>
+                                    <div>
+                                        <h4>メモ</h4>
+                                        <ul>
+                                            <?php foreach ($plan['notes'] as $note): ?>
+                                                <li><?= h($note) ?></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </div>
+                                <?php endif; ?>
+
+                                <div class="confirm-box">
+                                    <form action="./confirm-plan.php" method="post">
+                                        <input type="hidden" name="selectedPlan" value="<?= h(base64_encode(json_encode($plan, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))) ?>">
+                                        <input type="hidden" name="inputData" value="<?= h(base64_encode(json_encode($input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))) ?>">
+                                        <button type="submit" class="confirm-button">このプランを確定</button>
+                                    </form>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <p>クエスト情報はありません。</p>
-                        <?php endif; ?>
-
-                        <h4>注意点</h4>
-                        <?php if (!empty($plan['notes']) && is_array($plan['notes'])): ?>
-                            <ul>
-                                <?php foreach ($plan['notes'] as $note): ?>
-                                    <li><?= h($note) ?></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php else: ?>
-                            <p>特記事項なし</p>
-                        <?php endif; ?>
-                    </section>
-                <?php endforeach; ?>
-            </div>
-
-            <div class="box">
-                <h2>デバッグ用: APIレスポンス</h2>
-                <pre><?= h(json_encode($apiResponse, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) ?></pre>
-            </div>
+                            </section>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <p>プラン候補を取得できませんでした。</p>
+                <?php endif; ?>
+            </section>
         <?php endif; ?>
 
         <p><a href="./input-plan.html">入力フォームに戻る</a></p>

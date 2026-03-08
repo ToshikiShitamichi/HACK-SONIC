@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 header('Content-Type: application/json; charset=UTF-8');
 
-/**
- * .env を簡易読み込み
- */
 function loadEnv(string $path): void
 {
     if (!file_exists($path)) {
@@ -33,8 +30,6 @@ function loadEnv(string $path): void
 
         $name = trim($name);
         $value = trim($value);
-
-        // 先頭と末尾のクォートを除去
         $value = trim($value, "\"'");
 
         $_ENV[$name] = $value;
@@ -85,16 +80,48 @@ function getGoogleMapsApiKey(): string
 
 function getUserInterestCategory(): string
 {
-    // 将来はユーザープロフィールやDBから取得
-    // 未実装のため .env を参照し、なければデフォルトで「すべて」
     return getEnvValue('USER_DEFAULT_INTEREST', 'すべて');
 }
 
-/**
- * OpenAI API を呼び出して旅行プランを生成
- *
- * @throws RuntimeException
- */
+function postJson(string $url, array $payload, array $headers = [], int $timeout = 20): array
+{
+    $ch = curl_init($url);
+
+    $defaultHeaders = [
+        'Content-Type: application/json',
+    ];
+
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => array_merge($defaultHeaders, $headers),
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_TIMEOUT => $timeout,
+    ]);
+
+    $responseBody = curl_exec($ch);
+    $curlError = curl_error($ch);
+    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($responseBody === false) {
+        throw new RuntimeException('外部API呼び出しに失敗しました: ' . $curlError);
+    }
+
+    $decoded = json_decode($responseBody, true);
+
+    if (!is_array($decoded)) {
+        throw new RuntimeException('外部APIレスポンスのJSON解析に失敗しました。HTTP: ' . $httpCode . ' / body: ' . $responseBody);
+    }
+
+    if ($httpCode < 200 || $httpCode >= 300) {
+        $errorMessage = $decoded['error']['message'] ?? ('HTTPエラー: ' . $httpCode);
+        throw new RuntimeException('外部APIエラー: ' . $errorMessage);
+    }
+
+    return $decoded;
+}
+
 function callOpenAI(array $input, string $userInterestCategory): array
 {
     $apiKey = getEnvValue('OPENAI_API_KEY');
@@ -117,19 +144,21 @@ function callOpenAI(array $input, string $userInterestCategory): array
 
     $systemPrompt = <<<PROMPT
 あなたは日本国内旅行プラン作成のプロです。
-ユーザー入力、候補スポット情報、移動条件をもとに、旅行プラン候補を3つ、日本語で提案してください。
+ユーザー入力と候補スポット情報をもとに、旅行プラン候補を3つ、日本語で提案してください。
 
 必須条件:
 - 必ず JSON のみを返すこと
 - JSON以外の文章は一切含めないこと
 - 候補は3件
-- 旅行期間は「出発日の9:00 〜 帰り日の18:00」を行動可能時間の目安として組むこと
-- 現実的な移動・観光順にすること
 - quests は必ず3件にすること
-- goal と quests で同じ場所を使わないこと（goal.name と quests[].place が同一にならないこと）
+- goal と quests で同じ場所を使わないこと
 - ゴールや quest に含めるスポット・店舗は、必ず実在する固有名詞を前提にすること
 - 各スポットには、わかる範囲で area を入れること
 - 予算感はユーザー予算にできるだけ合わせること
+- questに1件スウィーツに関するものを入れること
+- 観光順は意識しなくてよい
+- 経路検索や時系列の行程は前提にしないこと
+- travel_time_from_previous は固定文言でもよい
 
 各 plan は以下の項目を持つこと:
 - plan_title
@@ -179,11 +208,10 @@ quests は各要素ごとに以下:
 - image は URL 文字列または null
 - image_source は "official" / "generated" / null
 - official_url は 公式サイトが分かる場合のみ文字列、なければ null
-- travel_time_from_previous は「前の地点からの移動時間」を自然な日本語で記載
+- travel_time_from_previous は「観光順未考慮」など自然な日本語で記載してよい
 - estimated_cost は「1人あたり」「グループ合計」などが分かる自然な日本語で記載
-- total_travel_time_text はプラン全体の移動時間目安
+- total_travel_time_text は「経路検索なし」などでもよい
 - total_cost_estimate_text は交通費・食費・入場料などを含む概算説明
-- goal.name と quests[].place は重複禁止
 
 出力JSONは次の形に厳密に合わせること:
 
@@ -252,13 +280,13 @@ PROMPT;
 - ユーザーが気になるカテゴリ: {$userInterestCategory}
 
 【重要ルール】
-- 行動時間は、出発日の09:00から帰り日の18:00までを目安にする
 - 各スポットや店は、実在する固有名詞を優先して提案する
 - 店名や施設名は、チェーン名だけでなく候補店舗が想像できる粒度で具体化する
-- 無理のある詰め込みは避け、移動と滞在のバランスを取る
 - キーワードがあれば、雰囲気や立ち寄り先に反映する
 - ゴールとクエストは同じ施設・同じ店にしないこと
 - クエストは必ず3件作成すること
+- 観光順は意識しないこと
+- 経路検索や移動順ベースの提案にはしないこと
 
 【補足】
 - この時点では画像URLや公式URLが不明なら null でよい
@@ -269,14 +297,8 @@ PROMPT;
         'model' => $model,
         'temperature' => 0.9,
         'messages' => [
-            [
-                'role' => 'system',
-                'content' => $systemPrompt,
-            ],
-            [
-                'role' => 'user',
-                'content' => $userPrompt,
-            ],
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $userPrompt],
         ],
     ];
 
@@ -328,45 +350,6 @@ PROMPT;
     return $json;
 }
 
-function postJson(string $url, array $payload, array $headers = [], int $timeout = 20): array
-{
-    $ch = curl_init($url);
-
-    $defaultHeaders = [
-        'Content-Type: application/json',
-    ];
-
-    curl_setopt_array($ch, [
-        CURLOPT_POST => true,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPHEADER => array_merge($defaultHeaders, $headers),
-        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-        CURLOPT_TIMEOUT => $timeout,
-    ]);
-
-    $responseBody = curl_exec($ch);
-    $curlError = curl_error($ch);
-    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($responseBody === false) {
-        throw new RuntimeException('外部API呼び出しに失敗しました: ' . $curlError);
-    }
-
-    $decoded = json_decode($responseBody, true);
-
-    if (!is_array($decoded)) {
-        throw new RuntimeException('外部APIレスポンスのJSON解析に失敗しました。HTTP: ' . $httpCode . ' / body: ' . $responseBody);
-    }
-
-    if ($httpCode < 200 || $httpCode >= 300) {
-        $errorMessage = $decoded['error']['message'] ?? ('HTTPエラー: ' . $httpCode);
-        throw new RuntimeException('外部APIエラー: ' . $errorMessage);
-    }
-
-    return $decoded;
-}
-
 function callGooglePlacesTextSearch(string $textQuery, ?string $regionCode = 'JP'): ?array
 {
     $apiKey = getGoogleMapsApiKey();
@@ -398,204 +381,107 @@ function callGooglePlacesTextSearch(string $textQuery, ?string $regionCode = 'JP
 function buildGooglePlacePhotoUrl(string $photoName, int $maxWidth = 800): string
 {
     $apiKey = getGoogleMapsApiKey();
-
     return "https://places.googleapis.com/v1/{$photoName}/media?maxWidthPx={$maxWidth}&key={$apiKey}";
 }
 
-function formatDurationJa(string $duration): string
+function normalizePlaceInfo(?array $place, string $fallbackLabel = '', string $fallbackAddress = ''): array
 {
-    // 例: "1234s"
-    $seconds = (int)str_replace('s', '', $duration);
+    $label = $fallbackLabel;
+    $address = $fallbackAddress;
+    $lat = null;
+    $lng = null;
+    $mapsUrl = null;
+    $websiteUrl = null;
+    $image = null;
 
-    $hours = intdiv($seconds, 3600);
-    $minutes = intdiv($seconds % 3600, 60);
+    if (is_array($place)) {
+        if (!empty($place['displayName']['text'])) {
+            $label = (string)$place['displayName']['text'];
+        }
 
-    if ($hours > 0) {
-        return $minutes > 0
-            ? "{$hours}時間{$minutes}分"
-            : "{$hours}時間";
+        if (!empty($place['formattedAddress'])) {
+            $address = (string)$place['formattedAddress'];
+        }
+
+        if (isset($place['location']['latitude'])) {
+            $lat = (float)$place['location']['latitude'];
+        }
+
+        if (isset($place['location']['longitude'])) {
+            $lng = (float)$place['location']['longitude'];
+        }
+
+        if (!empty($place['googleMapsUri'])) {
+            $mapsUrl = (string)$place['googleMapsUri'];
+        }
+
+        if (!empty($place['websiteUri'])) {
+            $websiteUrl = (string)$place['websiteUri'];
+        }
+
+        if (!empty($place['photos'][0]['name'])) {
+            $image = buildGooglePlacePhotoUrl((string)$place['photos'][0]['name']);
+        }
     }
 
-    return "{$minutes}分";
-}
-
-function formatDistanceJa(int $distanceMeters): string
-{
-    if ($distanceMeters >= 1000) {
-        return round($distanceMeters / 1000, 1) . 'km';
-    }
-
-    return $distanceMeters . 'm';
+    return [
+        'label' => $label,
+        'address' => $address,
+        'lat' => $lat,
+        'lng' => $lng,
+        'google_maps_url' => $mapsUrl,
+        'official_url' => $websiteUrl,
+        'image' => $image,
+    ];
 }
 
 function enrichPlansWithGooglePlaces(array $plans, array $input): array
 {
     foreach ($plans as &$plan) {
-
-        // ===== goal 補完 =====
         if (!empty($plan['goal']['name'])) {
-
             $query = $plan['goal']['name'] . ' ' . $input['destinationPrefecture'];
-
             $place = callGooglePlacesTextSearch($query);
 
             if ($place) {
-
-                if (!empty($place['photos'][0]['name'])) {
-                    $plan['goal']['image'] = buildGooglePlacePhotoUrl($place['photos'][0]['name']);
-                    $plan['goal']['image_source'] = 'official';
-                }
-
-                if (!empty($place['websiteUri'])) {
-                    $plan['goal']['official_url'] = $place['websiteUri'];
-                }
-
-                if (!empty($place['formattedAddress'])) {
-                    $plan['goal']['area'] = $place['formattedAddress'];
-                }
-
-                if (!empty($place['googleMapsUri'])) {
-                    $plan['goal']['google_maps_url'] = $place['googleMapsUri'];
-                }
+                $goalInfo = normalizePlaceInfo($place, (string)$plan['goal']['name'], (string)($plan['goal']['area'] ?? ''));
+                $plan['goal']['image'] = $goalInfo['image'];
+                $plan['goal']['image_source'] = $goalInfo['image'] ? 'official' : ($plan['goal']['image_source'] ?? null);
+                $plan['goal']['official_url'] = $goalInfo['official_url'] ?: ($plan['goal']['official_url'] ?? null);
+                $plan['goal']['area'] = $goalInfo['address'] ?: ($plan['goal']['area'] ?? '');
+                $plan['goal']['google_maps_url'] = $goalInfo['google_maps_url'];
+                $plan['goal']['lat'] = $goalInfo['lat'];
+                $plan['goal']['lng'] = $goalInfo['lng'];
             }
         }
 
-        // ===== quests 補完 =====
         if (!empty($plan['quests']) && is_array($plan['quests'])) {
-
             foreach ($plan['quests'] as &$quest) {
-
                 if (empty($quest['place'])) {
                     continue;
                 }
 
                 $query = $quest['place'] . ' ' . $input['destinationPrefecture'];
-
                 $place = callGooglePlacesTextSearch($query);
 
                 if (!$place) {
                     continue;
                 }
 
-                if (!empty($place['photos'][0]['name'])) {
-                    $quest['image'] = buildGooglePlacePhotoUrl($place['photos'][0]['name']);
-                    $quest['image_source'] = 'official';
-                }
-
-                if (!empty($place['websiteUri'])) {
-                    $quest['official_url'] = $place['websiteUri'];
-                }
-
-                if (!empty($place['formattedAddress'])) {
-                    $quest['area'] = $place['formattedAddress'];
-                }
-
-                if (!empty($place['googleMapsUri'])) {
-                    $quest['google_maps_url'] = $place['googleMapsUri'];
-                }
-            }
-        }
-    }
-
-    return $plans;
-}
-
-function enrichPlansWithRoutes(array $plans, array $input): array
-{
-    $originBase = trim(
-        ($input['departurePrefecture'] ?? '') . ' ' .
-            ($input['departureCity'] ?? '')
-    );
-
-    foreach ($plans as &$plan) {
-        $previousAddress = $originBase;
-
-        if (!empty($plan['quests']) && is_array($plan['quests'])) {
-            foreach ($plan['quests'] as &$quest) {
-                $currentAddress = trim(
-                    ($quest['area'] ?? '') !== ''
-                        ? $quest['area']
-                        : (($quest['place'] ?? '') . ' ' . ($input['destinationPrefecture'] ?? ''))
-                );
-
-                if ($previousAddress !== '' && $currentAddress !== '') {
-                    $travelText = buildTravelText($previousAddress, $currentAddress, 'TRANSIT');
-
-                    if ($travelText !== null) {
-                        $quest['travel_time_from_previous'] = $travelText;
-                    }
-                }
-
-                $previousAddress = $currentAddress;
+                $questInfo = normalizePlaceInfo($place, (string)$quest['place'], (string)($quest['area'] ?? ''));
+                $quest['image'] = $questInfo['image'];
+                $quest['image_source'] = $questInfo['image'] ? 'official' : ($quest['image_source'] ?? null);
+                $quest['official_url'] = $questInfo['official_url'] ?: ($quest['official_url'] ?? null);
+                $quest['area'] = $questInfo['address'] ?: ($quest['area'] ?? '');
+                $quest['google_maps_url'] = $questInfo['google_maps_url'];
+                $quest['lat'] = $questInfo['lat'];
+                $quest['lng'] = $questInfo['lng'];
             }
             unset($quest);
-        }
-
-        // 最後の quest から goal までの移動を notes に追加したい場合
-        if (!empty($plan['goal']['area']) && $previousAddress !== '') {
-            $goalTravelText = buildTravelText($previousAddress, $plan['goal']['area'], 'TRANSIT');
-
-            if ($goalTravelText !== null) {
-                $plan['notes'][] = '最終クエストからゴールまでの移動目安: ' . $goalTravelText;
-            }
         }
     }
     unset($plan);
 
     return $plans;
-}
-
-function callGoogleComputeRoutes(string $originAddress, string $destinationAddress, string $travelMode = 'TRANSIT'): ?array
-{
-    $apiKey = getGoogleMapsApiKey();
-    $url = 'https://routes.googleapis.com/directions/v2:computeRoutes';
-
-    $payload = [
-        'origin' => [
-            'address' => $originAddress,
-        ],
-        'destination' => [
-            'address' => $destinationAddress,
-        ],
-        'travelMode' => $travelMode,
-        'languageCode' => 'ja',
-        'units' => 'METRIC',
-    ];
-
-    $headers = [
-        'X-Goog-Api-Key: ' . $apiKey,
-        'X-Goog-FieldMask: routes.duration,routes.distanceMeters',
-    ];
-
-    $response = postJson($url, $payload, $headers, 20);
-
-    if (empty($response['routes']) || !is_array($response['routes'])) {
-        return null;
-    }
-
-    return $response['routes'][0];
-}
-
-function buildTravelText(string $originAddress, string $destinationAddress, string $travelMode = 'TRANSIT'): ?string
-{
-    $route = callGoogleComputeRoutes($originAddress, $destinationAddress, $travelMode);
-
-    if (!$route) {
-        return null;
-    }
-
-    $durationText = !empty($route['duration']) ? formatDurationJa($route['duration']) : null;
-    $distanceText = isset($route['distanceMeters']) ? formatDistanceJa((int)$route['distanceMeters']) : null;
-
-    if ($durationText !== null && $distanceText !== null) {
-        return "{$durationText}（約{$distanceText}）";
-    }
-
-    if ($durationText !== null) {
-        return $durationText;
-    }
-
-    return null;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -674,9 +560,7 @@ $userInterestCategory = getUserInterestCategory();
 
 try {
     $result = callOpenAI($input, $userInterestCategory);
-
     $result['plans'] = enrichPlansWithGooglePlaces($result['plans'], $input);
-    $result['plans'] = enrichPlansWithRoutes($result['plans'], $input);
 
     respondJson([
         'success' => true,
