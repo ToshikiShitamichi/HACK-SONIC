@@ -183,11 +183,11 @@
             <p>
                 <span id="budgetMinText">0円</span>
                 〜
-                <span id="budgetMaxText">100,000円</span>
+                <span id="budgetMaxText">150,000円</span>
             </p>
 
             <input type="hidden" id="budgetMin" name="budgetMin" value="0">
-            <input type="hidden" id="budgetMax" name="budgetMax" value="100000">
+            <input type="hidden" id="budgetMax" name="budgetMax" value="150000">
         </div>
 
         <div>
@@ -195,6 +195,38 @@
         </div>
     </form>
 
+    <div id="loadingOverlay" hidden aria-live="polite" aria-busy="true"
+        style="position:fixed; inset:0; background:rgba(255,255,255,0.92); z-index:9999; display:none;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center;">
+            <p style="margin:0 0 16px; font-size:24px;">プランを生成中です</p>
+            <div style="display:flex; justify-content:center; gap:12px; margin-bottom:16px;">
+                <span class="loading-dot"
+                    style="width:14px; height:14px; border-radius:50%; background:#333; display:inline-block; animation: loadingBounce 1.2s infinite ease-in-out;"></span>
+                <span class="loading-dot"
+                    style="width:14px; height:14px; border-radius:50%; background:#333; display:inline-block; animation: loadingBounce 1.2s 0.2s infinite ease-in-out;"></span>
+                <span class="loading-dot"
+                    style="width:14px; height:14px; border-radius:50%; background:#333; display:inline-block; animation: loadingBounce 1.2s 0.4s infinite ease-in-out;"></span>
+            </div>
+            <p id="loadingMessage" style="margin:0;">2分ほどかかる場合があります。画面を閉じずにお待ちください。</p>
+        </div>
+    </div>
+
+    <style>
+        @keyframes loadingBounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0.7);
+                opacity: 0.4;
+            }
+
+            40% {
+                transform: scale(1.15);
+                opacity: 1;
+            }
+        }
+    </style>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.min.js"></script>
