@@ -89,7 +89,7 @@ $output = "";
 foreach ($result as $record) {
     $deleteBtn = '';
     if ((int)$record['user_id'] === (int)$user_id) {
-        $deleteBtn = "<a class='deleteBtn' href='./controller/delete.php?id={$record['id']}' onclick='return confirm(\"本当に削除しますか？\")'>削除</a>";
+        $deleteBtn = "<a class='deleteBtn' href='./R/controller/delete.php?id={$record['id']}' onclick='return confirm(\"本当に削除しますか？\")'>削除</a>";
     }
 
     $likedClass = !empty($record['liked']) ? 'liked' : '';
