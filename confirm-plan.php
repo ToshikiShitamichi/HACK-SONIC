@@ -247,110 +247,179 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>確定した旅行プラン</title>
+    <title>確定した旅行プラン | 旅 so sweet</title>
+    <link rel="stylesheet" href="./assets/css/common.css">
     <style>
-        body {
-            margin: 0;
-            padding: 16px;
-            background: #f7f7f7;
-            font-family: sans-serif;
+        .plan-card {
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 4px 16px rgba(232, 64, 92, 0.06);
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
+        .plan-card h2 {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 16px;
         }
 
-        .card {
-            border: 1px solid #cccccc;
-            background: #fff;
-            padding: 16px;
-            box-sizing: border-box;
+        .plan-card p {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .section-heading {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin: 28px 0 16px;
+            padding: 10px 16px;
+            background: var(--pink-pale);
+            border-left: 4px solid var(--pink);
+            border-radius: 0 10px 10px 0;
         }
 
         .spot-card {
-            border: 1px solid #dddddd;
-            padding: 12px;
-            margin-top: 12px;
-            background: #fafafa;
+            border: 1.5px solid var(--border);
+            padding: 18px;
+            margin-top: 14px;
+            background: var(--cream);
+            border-radius: 14px;
+        }
+
+        .spot-card h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .spot-card > div:first-child strong {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
         }
 
         .spot-card img {
             width: 100%;
-            max-width: 320px;
+            max-width: 360px;
             height: 200px;
             object-fit: cover;
-            margin-top: 8px;
+            margin-top: 12px;
             display: block;
+            border-radius: 12px;
+            border: 1px solid var(--border);
         }
 
         .spot-meta {
-            margin-top: 8px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.6;
         }
 
         .spot-meta div {
-            margin-top: 4px;
+            margin-top: 6px;
+        }
+
+        .spot-meta a {
+            color: var(--pink);
+            font-weight: 600;
         }
 
         .quest-number {
             display: inline-block;
-            font-weight: bold;
-            margin-bottom: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            background: var(--pink);
+            color: var(--white);
+            border-radius: 50px;
+            margin-bottom: 10px;
         }
 
         .button-row {
-            margin-top: 24px;
-        }
-
-        .back-button {
-            display: inline-block;
-            padding: 10px 16px;
-            background: #222;
-            color: #fff;
-            text-decoration: none;
-            margin-right: 8px;
-        }
-
-        .sub-box {
-            margin-top: 16px;
-            background: #fff;
-            border: 1px solid #ddd;
-            padding: 16px;
+            margin-top: 32px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .message-box {
-            margin-bottom: 16px;
-            padding: 12px 16px;
-            border-radius: 6px;
+            margin-bottom: 20px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .message-success {
-            background: #ecfdf3;
-            border: 1px solid #86efac;
-            color: #166534;
+            background: var(--pink-pale);
+            border: 1.5px solid var(--border);
+            color: var(--pink-deep);
         }
 
         .message-error {
-            background: #fef2f2;
-            border: 1px solid #fca5a5;
-            color: #991b1b;
+            background: #fff0f0;
+            border: 1.5px solid #ffc8c8;
+            color: #d94040;
+        }
+
+        .notes-list {
+            margin-top: 12px;
+            padding-left: 20px;
+        }
+
+        .notes-list li {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            line-height: 1.6;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>確定した旅行プラン</h1>
 
+<div class="page-frame-top"></div>
+
+<header>
+    <div class="header-brand">
+        <span class="brand-kanji">旅</span>
+        <span class="brand-roman">so sweet</span>
+    </div>
+    <nav class="header-nav">
+        <a href="./index.php">ホーム</a>
+        <a href="./quests/quest_list.php">旅クエスト</a>
+        <a href="./auth/logout.php">ログアウト</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <p class="hero-eyebrow">Plan Confirmed</p>
+    <h1 class="hero-title">旅行<em>プラン</em>確定</h1>
+    <p class="hero-subtitle">クエストとして保存されました</p>
+</section>
+
+<main>
         <?php if ($saveMessage !== ''): ?>
-            <div class="message-box message-success"><?= h($saveMessage) ?></div>
+            <div class="message-box message-success">&#10003; <?= h($saveMessage) ?></div>
         <?php endif; ?>
 
         <?php if ($saveError !== ''): ?>
-            <div class="message-box message-error"><?= h($saveError) ?></div>
+            <div class="message-box message-error">&#10007; <?= h($saveError) ?></div>
         <?php endif; ?>
 
-        <section class="card">
+        <section class="plan-card">
             <h2><?= h($plan['plan_title'] ?? 'タイトル未設定') ?></h2>
 
             <?php if (!empty($plan['concept'])): ?>
@@ -371,8 +440,8 @@ try {
             <?php endif; ?>
 
             <?php if (!empty($plan['goal']) && is_array($plan['goal'])): ?>
+                <h4 class="section-heading">ゴール地点</h4>
                 <div class="spot-card">
-                    <h3>ゴール地点</h3>
                     <div><strong><?= h($plan['goal']['name'] ?? '') ?></strong></div>
 
                     <?php if (!empty($plan['goal']['description'])): ?>
@@ -404,7 +473,7 @@ try {
             <?php endif; ?>
 
             <?php if (!empty($plan['quests']) && is_array($plan['quests'])): ?>
-                <h3>クエスト</h3>
+                <h4 class="section-heading">クエスト</h4>
 
                 <?php foreach ($plan['quests'] as $qIndex => $quest): ?>
                     <div class="spot-card">
@@ -461,21 +530,23 @@ try {
             <?php endif; ?>
 
             <?php if (!empty($plan['notes']) && is_array($plan['notes'])): ?>
-                <div>
-                    <h3>メモ</h3>
-                    <ul>
-                        <?php foreach ($plan['notes'] as $note): ?>
-                            <li><?= h($note) ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
+                <h4 class="section-heading">メモ</h4>
+                <ul class="notes-list">
+                    <?php foreach ($plan['notes'] as $note): ?>
+                        <li><?= h($note) ?></li>
+                    <?php endforeach; ?>
+                </ul>
             <?php endif; ?>
         </section>
 
         <div class="button-row">
-            <a href="./quests/quest_list.php" class="back-button">クエスト一覧にすすむ</a>
+            <a href="./quests/quest_list.php" class="btn-primary">クエスト一覧にすすむ</a>
+            <a href="./index.php" class="btn-secondary">ホームに戻る</a>
         </div>
-    </div>
+</main>
+
+<footer class="page-footer">Travel Quest · 旅 so sweet</footer>
+
 </body>
 
 </html>
