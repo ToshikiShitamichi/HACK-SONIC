@@ -144,22 +144,49 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
             box-sizing: border-box;
         }
 
+        .plan-column h2,
+        .plan-column h3,
+        .plan-column h4,
+        .plan-column p {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .plan-column h4 {
+            margin: 20px 0 10px;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-left: 4px solid #222;
+            box-sizing: border-box;
+        }
+
         .spot-card {
             border: 1px solid #dddddd;
             padding: 12px;
             margin-top: 12px;
             background: #fafafa;
+            box-sizing: border-box;
         }
 
-        .spot-card img {
-            max-width: 100%;
-            height: auto;
-            margin-top: 8px;
+        .spot-image-wrap {
+            width: 100%;
+            height: 220px;
+            margin-top: 12px;
+            overflow: hidden;
+            background: #e9e9e9;
+            box-sizing: border-box;
+        }
+
+        .spot-image-wrap img {
+            width: 100%;
+            height: 100%;
             display: block;
+            object-fit: cover;
         }
 
         .spot-meta {
             margin-top: 8px;
+            padding-left: 4px;
         }
 
         .spot-meta div {
@@ -167,7 +194,7 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
         }
 
         .quest-number {
-            display: inline-block;
+            display: block;
             font-weight: bold;
             margin-bottom: 8px;
         }
@@ -211,7 +238,7 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
     <div class="container">
         <h1>旅行プラン提案結果</h1>
 
-        <section>
+        <!-- <section>
             <h2>入力内容</h2>
             <dl>
                 <dt>出発地（都道府県）</dt>
@@ -247,7 +274,7 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
                 <dt>気になるカテゴリ</dt>
                 <dd><?= h($apiResponse['user_context']['interest_category'] ?? 'すべて') ?></dd>
             </dl>
-        </section>
+        </section> -->
 
         <?php if ($pageError !== null): ?>
             <section class="error">
@@ -294,8 +321,8 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
                                 <?php endif; ?>
 
                                 <?php if (!empty($plan['goal']) && is_array($plan['goal'])): ?>
+                                    <h4>ゴール地点</h4>
                                     <div class="spot-card">
-                                        <h4>ゴール地点</h4>
                                         <div><strong><?= h($plan['goal']['name'] ?? '') ?></strong></div>
 
                                         <?php if (!empty($plan['goal']['description'])): ?>
@@ -321,7 +348,9 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
                                         </div>
 
                                         <?php if (!empty($plan['goal']['image'])): ?>
-                                            <img src="<?= h($plan['goal']['image']) ?>" alt="<?= h($plan['goal']['name'] ?? 'ゴール地点') ?>">
+                                            <div class="spot-image-wrap">
+                                                <img src="<?= h($plan['goal']['image']) ?>" alt="<?= h($plan['goal']['name'] ?? 'ゴール地点') ?>">
+                                            </div>
                                         <?php endif; ?>
                                     </div>
                                 <?php endif; ?>
@@ -377,7 +406,9 @@ if (is_array($apiResponse) && !empty($apiResponse['data']['plans']) && is_array(
                                             </div>
 
                                             <?php if (!empty($quest['image'])): ?>
-                                                <img src="<?= h($quest['image']) ?>" alt="<?= h($quest['place'] ?? $quest['title'] ?? 'クエスト') ?>">
+                                                <div class="spot-image-wrap">
+                                                    <img src="<?= h($quest['image']) ?>" alt="<?= h($quest['place'] ?? $quest['title'] ?? 'クエスト') ?>">
+                                                </div>
                                             <?php endif; ?>
                                         </div>
                                     <?php endforeach; ?>
