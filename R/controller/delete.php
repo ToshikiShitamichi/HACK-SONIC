@@ -4,7 +4,7 @@ session_start();
 $id = $_GET['id'];
 $user_id = $_SESSION['user_id'];
 
-include('../config/db.php'); 
+include('../../config/db.php'); 
 $pdo = get_db();
 
 $sql = 'DELETE FROM post_table WHERE id=:id AND user_id=:user_id';
