@@ -26,7 +26,7 @@ if ($user && password_verify($password, $user['password'])) {
     // 認証成功：セッション固定化攻撃対策
     session_regenerate_id(true);
     $_SESSION['user_id'] = $user['id'];
-    header('Location: ' . BASE_URL . '/index.php');
+    header('Location: ../index.php');
     exit;
 }
 
