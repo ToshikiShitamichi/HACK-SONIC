@@ -1,37 +1,45 @@
 <?php
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
-// DB接続設定
-$host = "localhost";
-$db   = "travel_quiz"; // DB名
-$user = "root";
-$pass = "";
-$charset = "utf8mb4";
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-];
+require_once __DIR__ . '/../../config/db.php';
 
 try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (PDOException $e) {
-    echo json_encode(['error' => 'DB接続失敗: ' . $e->getMessage()]);
-    exit;
+
+    $pdo = get_db();
+
+    // 都道府県
+    $stmt_pref = $pdo->query("
+        SELECT id, name
+        FROM prefectures
+        ORDER BY id ASC
+    ");
+
+    $prefectures = $stmt_pref->fetchAll();
+
+    // ジャンル
+    $stmt_genre = $pdo->query("
+        SELECT id, name
+        FROM categories
+        ORDER BY id ASC
+    ");
+
+    $genres = $stmt_genre->fetchAll();
+
+    echo json_encode([
+        'success' => true,
+        'prefectures' => $prefectures,
+        'genres' => $genres
+    ], JSON_UNESCAPED_UNICODE);
+
+} catch (Exception $e) {
+
+    http_response_code(500);
+
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ], JSON_UNESCAPED_UNICODE);
 }
-
-// 都道府県取得
-$pref_stmt = $pdo->query("SELECT id, name FROM prefectures ORDER BY id ASC");
-$prefectures = $pref_stmt->fetchAll();
-
-// ジャンル取得
-$genre_stmt = $pdo->query("SELECT id, name FROM categories ORDER BY id ASC");
-$genres = $genre_stmt->fetchAll();
-
-echo json_encode([
-    'success' => true,
-    'prefectures' => $prefectures,
-    'genres' => $genres
-]);

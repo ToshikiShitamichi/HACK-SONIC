@@ -1,0 +1,297 @@
+[
+  {
+    "question": "静岡県の名物「さわやかハンバーグ」で知られるレストラン「炭焼きレストランさわやか」の特徴的な提供スタイルはどれでしょう？",
+    "explanation": "静岡県の人気チェーン「炭焼きレストランさわやか」では、店員が客席でハンバーグを半分に切り、鉄板で焼き仕上げるパフォーマンスが名物です。県外からもこの体験を求めて多くの人が訪れます。",
+    "difficulty": 1,
+    "region": "中部",
+    "prefecture": "静岡県",
+    "choices": [
+      {"choice_text": "客席で半分に切り焼き仕上げする", "is_correct": 1},
+      {"choice_text": "炭火で丸ごと燻製にする", "is_correct": 0},
+      {"choice_text": "鉄板の上でフランベする", "is_correct": 0},
+      {"choice_text": "石焼き鍋で提供する", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "炭焼きレストランさわやか", "category": "グルメ"},
+      {"name": "げんこつハンバーグ", "category": "グルメ"}
+    ]
+  },
+  {
+    "question": "長崎県の名物料理「トルコライス」は、次のうちどの組み合わせが一般的な構成でしょう？",
+    "explanation": "トルコライスは長崎のご当地グルメで、ピラフ・ナポリタン・とんかつをワンプレートに盛り付ける豪快な料理です。店ごとにアレンジがあり、食べ歩きも人気です。",
+    "difficulty": 1,
+    "region": "九州",
+    "prefecture": "長崎県",
+    "choices": [
+      {"choice_text": "ピラフ・ナポリタン・とんかつ", "is_correct": 1},
+      {"choice_text": "カレー・焼きそば・ハンバーグ", "is_correct": 0},
+      {"choice_text": "ピラフ・餃子・麻婆豆腐", "is_correct": 0},
+      {"choice_text": "ナポリタン・オムレツ・唐揚げ", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "トルコライス", "category": "グルメ"}
+    ]
+  },
+  {
+    "question": "富山県の春の風物詩「ホタルイカの身投げ」は、どのような現象でしょう？",
+    "explanation": "ホタルイカが産卵のために浅瀬へ集まり、夜の海岸に大量に打ち上げられる現象です。富山湾では青く光る幻想的な光景を見ることができ、観光客にも人気です。",
+    "difficulty": 1,
+    "region": "中部",
+    "prefecture": "富山県",
+    "choices": [
+      {"choice_text": "ホタルイカが産卵のため浅瀬に集まる現象", "is_correct": 1},
+      {"choice_text": "ホタルイカが空中を飛ぶ行動", "is_correct": 0},
+      {"choice_text": "ホタルイカが岩に卵を産みつける行動", "is_correct": 0},
+      {"choice_text": "ホタルイカが海底に潜る行動", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "ホタルイカの身投げ", "category": "自然"},
+      {"name": "富山湾", "category": "観光地"}
+    ]
+  },
+  {
+    "question": "兵庫県姫路市にある姫路城は「白鷺城」とも呼ばれます。その理由として最も適切なのはどれでしょう？",
+    "explanation": "姫路城は白い漆喰の壁と優雅な姿が、羽を広げた白鷺に似ていることから「白鷺城」と呼ばれています。日本初の世界文化遺産の一つでもあります。",
+    "difficulty": 0,
+    "region": "関西",
+    "prefecture": "兵庫県",
+    "choices": [
+      {"choice_text": "白い外観が白鷺の姿に見えるため", "is_correct": 1},
+      {"choice_text": "白鷺が城に多く住んでいたため", "is_correct": 0},
+      {"choice_text": "城主の家紋が白鷺だったため", "is_correct": 0},
+      {"choice_text": "城壁が白い石で作られているため", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "姫路城", "category": "観光地"},
+      {"name": "白鷺城", "category": "歴史"}
+    ]
+  },
+  {
+    "question": "北海道の函館山から見える夜景は「世界三大夜景」の一つとされることがあります。その理由としてよく挙げられる特徴はどれでしょう？",
+    "explanation": "函館は両側を海に挟まれた砂州地形のため、夜景がくびれた形に広がります。この独特の形が宝石のように輝くことで有名です。",
+    "difficulty": 1,
+    "region": "北海道",
+    "prefecture": "北海道",
+    "choices": [
+      {"choice_text": "両側が海のくびれた地形で光が広がるため", "is_correct": 1},
+      {"choice_text": "街灯がすべて金色のため", "is_correct": 0},
+      {"choice_text": "山頂がガラス張りのため", "is_correct": 0},
+      {"choice_text": "夜だけ海面が光るため", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "函館山夜景", "category": "観光地"}
+    ]
+  },
+  {
+    "question": "香川県の名物「讃岐うどん」の特徴としてよく知られているのはどれでしょう？",
+    "explanation": "讃岐うどんは強いコシとつるっとした喉ごしが特徴です。香川県には多くのうどん店があり、うどん巡りを楽しむ観光客も多く訪れます。",
+    "difficulty": 0,
+    "region": "四国",
+    "prefecture": "香川県",
+    "choices": [
+      {"choice_text": "強いコシとつるっとした喉ごし", "is_correct": 1},
+      {"choice_text": "細く柔らかい麺", "is_correct": 0},
+      {"choice_text": "透明な麺", "is_correct": 0},
+      {"choice_text": "甘い味付けの麺", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "讃岐うどん", "category": "グルメ"}
+    ]
+  },
+  {
+    "question": "沖縄県の「美ら海水族館」で有名な巨大水槽「黒潮の海」にいる代表的な生き物は何でしょう？",
+    "explanation": "黒潮の海水槽には世界最大級の魚であるジンベエザメが泳いでいます。巨大水槽を悠々と泳ぐ姿は沖縄観光の大きな魅力の一つです。",
+    "difficulty": 0,
+    "region": "沖縄",
+    "prefecture": "沖縄県",
+    "choices": [
+      {"choice_text": "ジンベエザメ", "is_correct": 1},
+      {"choice_text": "ホホジロザメ", "is_correct": 0},
+      {"choice_text": "シュモクザメ", "is_correct": 0},
+      {"choice_text": "メガマウスザメ", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "美ら海水族館", "category": "観光地"}
+    ]
+  },
+  {
+    "question": "京都府の伏見稲荷大社で有名な「千本鳥居」。この鳥居が多く奉納される理由として最も近いものはどれでしょう？",
+    "explanation": "伏見稲荷大社では商売繁盛などの願いを込めて企業や個人が鳥居を奉納します。その結果、山道に数えきれないほどの鳥居が並ぶ景観が生まれました。",
+    "difficulty": 1,
+    "region": "関西",
+    "prefecture": "京都府",
+    "choices": [
+      {"choice_text": "願い事の成就を祈り鳥居を奉納するため", "is_correct": 1},
+      {"choice_text": "神社の境界を区切るため", "is_correct": 0},
+      {"choice_text": "鳥を集めるため", "is_correct": 0},
+      {"choice_text": "山道を照らすため", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "伏見稲荷大社", "category": "観光地"},
+      {"name": "千本鳥居", "category": "文化"}
+    ]
+  },
+  {
+    "question": "福岡名物「もつ鍋」に使われる“もつ”とは、主に牛や豚のどの部分を指すでしょう？",
+    "explanation": "もつ鍋の「もつ」は、牛や豚の小腸や大腸などの内臓を指します。福岡・博多発祥の料理で、醤油や味噌ベースのスープで野菜と一緒に煮込んで食べるのが特徴です。",
+    "difficulty": 0,
+    "region": "九州",
+    "prefecture": "福岡県",
+    "choices": [
+      {"choice_text": "内臓（小腸・大腸など）", "is_correct": 1},
+      {"choice_text": "肩ロース", "is_correct": 0},
+      {"choice_text": "すね肉", "is_correct": 0},
+      {"choice_text": "タン（舌）", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "もつ鍋", "category": "グルメ"}
+    ]
+  },
+  {
+    "question": "太宰府天満宮が学問の神様として有名なのは、どの歴史上の人物を祀っているからでしょう？",
+    "explanation": "太宰府天満宮は平安時代の学者・政治家である菅原道真を祀っています。道真は学問に優れた人物として知られ、現在では受験生が多く参拝する神社となっています。",
+    "difficulty": 0,
+    "region": "九州",
+    "prefecture": "福岡県",
+    "choices": [
+      {"choice_text": "菅原道真", "is_correct": 1},
+      {"choice_text": "聖徳太子", "is_correct": 0},
+      {"choice_text": "平清盛", "is_correct": 0},
+      {"choice_text": "源頼朝", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "太宰府天満宮", "category": "観光地"},
+      {"name": "菅原道真", "category": "歴史"}
+    ]
+  },
+  {
+    "question": "福岡市の夏の大イベント「博多祇園山笠」で、男たちが担いで街を走る山笠のクライマックスの行事は何と呼ばれるでしょう？",
+    "explanation": "博多祇園山笠のクライマックスは「追い山笠（おいやま）」と呼ばれ、早朝に山笠を担いで博多の街を全力で走る迫力ある行事です。700年以上の歴史があります。",
+    "difficulty": 1,
+    "region": "九州",
+    "prefecture": "福岡県",
+    "choices": [
+      {"choice_text": "追い山笠", "is_correct": 1},
+      {"choice_text": "山笠渡御", "is_correct": 0},
+      {"choice_text": "走り山祭", "is_correct": 0},
+      {"choice_text": "博多駆け山", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "博多祇園山笠", "category": "祭り"}
+    ]
+  },
+  {
+    "question": "福岡の屋台文化は全国的にも有名ですが、特に屋台が多く並ぶ福岡市中心部のエリアはどこでしょう？",
+    "explanation": "福岡市の屋台は中洲・天神・長浜エリアに多く集まっています。特に中洲の屋台街は観光客にも人気で、ラーメンや焼き鳥などを楽しめます。",
+    "difficulty": 0,
+    "region": "九州",
+    "prefecture": "福岡県",
+    "choices": [
+      {"choice_text": "中洲", "is_correct": 1},
+      {"choice_text": "門司港", "is_correct": 0},
+      {"choice_text": "太宰府", "is_correct": 0},
+      {"choice_text": "久留米城下", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "中洲屋台街", "category": "グルメ"}
+    ]
+  },
+  {
+    "question": "福岡県久留米市は、ある日本の麺料理発祥の地といわれています。その料理は何でしょう？",
+    "explanation": "久留米は豚骨ラーメン発祥の地とされ、白濁した豚骨スープのラーメン文化がここから広まりました。現在の博多ラーメンのルーツとも言われています。",
+    "difficulty": 1,
+    "region": "九州",
+    "prefecture": "福岡県",
+    "choices": [
+      {"choice_text": "豚骨ラーメン", "is_correct": 1},
+      {"choice_text": "ちゃんぽん", "is_correct": 0},
+      {"choice_text": "担々麺", "is_correct": 0},
+      {"choice_text": "味噌ラーメン", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "久留米ラーメン", "category": "グルメ"}
+    ]
+  },
+  {
+    "question": "福岡県のブランドいちご「あまおう」は、その名前の由来となる4つの特徴があります。次のうち含まれないものはどれでしょう？",
+    "explanation": "あまおうは「あかい・まるい・おおきい・うまい」の頭文字から名付けられた福岡のブランドいちごです。大粒で甘みが強く、全国的にも人気があります。",
+    "difficulty": 1,
+    "region": "九州",
+    "prefecture": "福岡県",
+    "choices": [
+      {"choice_text": "ながい", "is_correct": 1},
+      {"choice_text": "あかい", "is_correct": 0},
+      {"choice_text": "まるい", "is_correct": 0},
+      {"choice_text": "おおきい", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "あまおう", "category": "名産品"}
+    ]
+  },
+  {
+    "question": "北九州市にある「門司港レトロ地区」で有名な名物グルメはどれでしょう？",
+    "explanation": "門司港では焼きカレーが名物で、ご飯にカレーをかけ、チーズや卵をのせてオーブンで焼いた料理です。港町のレトロな街並みと一緒に楽しめます。",
+    "difficulty": 0,
+    "region": "九州",
+    "prefecture": "福岡県",
+    "choices": [
+      {"choice_text": "焼きカレー", "is_correct": 1},
+      {"choice_text": "瓦そば", "is_correct": 0},
+      {"choice_text": "チキン南蛮", "is_correct": 0},
+      {"choice_text": "イカ焼き", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "門司港レトロ", "category": "観光地"},
+      {"name": "門司港焼きカレー", "category": "グルメ"}
+    ]
+  },
+  {
+    "question": "福岡県柳川市で有名な観光体験「川下り」は、どのような乗り物で楽しむことができるでしょう？",
+    "explanation": "柳川の川下りは「どんこ舟」と呼ばれる小舟に乗り、船頭の案内を聞きながらゆっくりと水路を巡る観光です。江戸時代の城下町の水路が残る風情ある体験です。",
+    "difficulty": 0,
+    "region": "九州",
+    "prefecture": "福岡県",
+    "choices": [
+      {"choice_text": "どんこ舟", "is_correct": 1},
+      {"choice_text": "屋形船", "is_correct": 0},
+      {"choice_text": "ゴンドラ", "is_correct": 0},
+      {"choice_text": "水上バス", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "柳川川下り", "category": "観光地"}
+    ]
+  },
+  {
+    "question": "福岡県糸島市は近年観光地として人気ですが、海岸沿いに立つ白い鳥居と夫婦岩で知られるスポットはどこでしょう？",
+    "explanation": "糸島の「桜井二見ヶ浦」は、海中の夫婦岩と白い鳥居の絶景で有名です。夕日スポットとしても人気で、ドライブ観光の定番となっています。",
+    "difficulty": 1,
+    "region": "九州",
+    "prefecture": "福岡県",
+    "choices": [
+      {"choice_text": "桜井二見ヶ浦", "is_correct": 1},
+      {"choice_text": "志賀島海岸", "is_correct": 0},
+      {"choice_text": "芥屋海岸", "is_correct": 0},
+      {"choice_text": "西戸崎海岸", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "桜井二見ヶ浦", "category": "観光地"}
+    ]
+  },
+  {
+    "question": "福岡県の志賀島で発見された、日本の歴史教科書にも登場する金印に刻まれていた文字は何でしょう？",
+    "explanation": "志賀島で発見された金印には「漢委奴国王」と刻まれていました。後漢の皇帝が倭の国王に与えたとされ、日本と中国の古代交流を示す重要な歴史資料です。",
+    "difficulty": 2,
+    "region": "九州",
+    "prefecture": "福岡県",
+    "choices": [
+      {"choice_text": "漢委奴国王", "is_correct": 1},
+      {"choice_text": "倭国大王", "is_correct": 0},
+      {"choice_text": "大和天皇", "is_correct": 0},
+      {"choice_text": "日出処天子", "is_correct": 0}
+    ],
+    "tags": [
+      {"name": "漢委奴国王金印", "category": "歴史"},
+      {"name": "志賀島", "category": "観光地"}
+    ]
+  }
+]
