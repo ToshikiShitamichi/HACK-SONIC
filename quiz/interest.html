@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>気になる一覧</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .btn-top {
+            display: block;
+            width: 150px;
+            margin: 0 auto 20px auto;
+            padding: 10px 0;
+            font-weight: 500;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-top:hover {
+            background-color: #0056b3;
+        }
+
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        select {
+            padding: 8px 12px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+
+        #favorite-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .quiz-item {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .quiz-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .correct-answer {
+            font-weight: bold;
+            color: #2e7d32;
+            margin-top: 8px;
+        }
+
+        .quiz-item button {
+            margin-top: 10px;
+            padding: 8px 12px;
+            font-weight: 500;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quiz-item button:hover {
+            background-color: #0056b3;
+        }
+
+        /* モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 12px;
+            top: 8px;
+            font-size: 22px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+
+    <script>
+        $(function () {
+            loadFilters();
+            loadFavorites();
+        });
+
+        function loadFilters() {
+            $.ajax({
+                url: "api/get_filter_options.php",
+                method: "GET",
+                success: function (res) {
+                    if (res.success) {
+                        let prefOptions = '<option value="">すべての都道府県</option>';
+                        res.prefectures.forEach(p => prefOptions += `<option value="${p.id}">${p.name}</option>`);
+                        $('#filter-prefecture').html(prefOptions);
+
+                        let genreOptions = '<option value="">すべてのジャンル</option>';
+                        res.genres.forEach(g => genreOptions += `<option value="${g.id}">${g.name}</option>`);
+                        $('#filter-genre').html(genreOptions);
+                    } else {
+                        $("#favorite-list").html("<p>フィルター取得エラー: " + (res.error || "不明") + "</p>");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    $("#favorite-list").html("<p>通信エラーが発生しました: " + status + " / " + error + "</p>");
+                }
+            });
+        }
+
+        function loadFavorites() {
+            const prefecture_id = $('#filter-prefecture').val();
+            const genre_id = $('#filter-genre').val();
+
+            $.ajax({
+                url: "api/get_favorites.php",
+                method: "GET",
+                data: { prefecture_id, genre_id },
+                success: function (res) {
+                    if (res.success) {
+                        if (res.favorites.length === 0) {
+                            $("#favorite-list").html("<p>該当するお気に入りはありません。</p>");
+                            return;
+                        }
+
+                        let html = "";
+                        res.favorites.forEach(fav => {
+                            html += `
+                                <div class="quiz-item">
+                                    <strong>問題:</strong> ${fav.question}<br>
+                                    <div class="correct-answer">正解: ${fav.correct_answer}</div>
+                                    <button onclick="showExplanation('${fav.explanation.replace(/'/g, "\\'")}')">解説を見る</button>
+                                </div>
+                            `;
+                        });
+                        $("#favorite-list").html(html);
+                    } else {
+                        $("#favorite-list").html("<p>サーバーエラー: " + (res.error || "不明") + "</p>");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    let msg = "通信エラーが発生しました";
+                    if (xhr.responseText) {
+                        try {
+                            const json = JSON.parse(xhr.responseText);
+                            if (json.error) msg += ": " + json.error;
+                        } catch (e) {
+                            msg += ": " + xhr.responseText;
+                        }
+                    } else {
+                        msg += ": " + status + " / " + error;
+                    }
+                    $("#favorite-list").html("<p>" + msg + "</p>");
+                }
+            });
+        }
+
+        function showExplanation(explanation) {
+            $("#modal-text").text(explanation);
+            $("#modal").show();
+        }
+
+        function closeModal() {
+            $("#modal").hide();
+        }
+
+        $(document).on('change', '#filter-prefecture, #filter-genre', function () {
+            loadFavorites();
+        });
+    </script>
+</head>
+
+<body>
+    <h1>気になる一覧</h1>
+    <a href="quiz-top.html" class="btn-top">トップに戻る</a>
+
+    <div class="filters">
+        <select id="filter-prefecture"></select>
+        <select id="filter-genre"></select>
+    </div>
+
+    <div id="favorite-list"></div>
+
+    <!-- モーダル -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <p id="modal-text"></p>
+        </div>
+    </div>
+</body>
+
+</html>
