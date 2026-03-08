@@ -130,7 +130,7 @@ foreach ($result as $record) {
     </header>
     <main>
         <div id="quizArea">
-            <?= include('./quiz/quiz-top-component.php'); ?>
+            <?php include('./quiz/quiz-top-component.php'); ?>
             <!-- <h2>クイズ</h2>
             <div>
                 <p>日本一GEEKな場所はどこでしょう</p>
