@@ -1,6 +1,6 @@
 <?php
 //プランテーブルの目的地を取得
-include('./R/config/db.php'); 
+include('../../config/db.php'); 
 
 // データ受け取り
 $plan_id = $_GET['plan_id'] ?? null;
